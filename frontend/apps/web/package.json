@@ -1,0 +1,30 @@
+{
+  "name": "@gwx/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview --port 5173"
+  },
+  "dependencies": {
+    "@gwx/api": "*",
+    "@lucide/vue": "^1.64.0",
+    "@tanstack/vue-query": "^5.105.0",
+    "clsx": "^2.1.1",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "vue-sonner": "^2.0.9"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vue-tsc": "^3.3.14"
+  }
+}

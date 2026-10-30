@@ -1,0 +1,17 @@
+{
+  "name": "gwx-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "generate:api": "bash scripts/generate-api.sh",
+    "dev:web": "npm run dev --workspace apps/web",
+    "dev:admin": "npm run dev --workspace apps/admin",
+    "build:web": "npm run build --workspace apps/web",
+    "build:admin": "npm run build --workspace apps/admin",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

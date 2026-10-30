@@ -1,25 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status, Depends, Query
-from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Query
 from app.database import supabase
+from app.dependencies import require_admin, get_optional_user
+from app.routers.reviews import list_product_reviews
 import uuid
 from typing import List, Optional
-
-security = HTTPBearer()
-
-def verify_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    token = credentials.credentials
-    try:
-        #weask supabase to verify the token is real and belongs to a user
-        user = supabase.auth.get_user(token)
-        return user
-    except Exception as e:
-        # If the token e is invalid or expired, raise an HTTPException
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -40,16 +24,38 @@ def get_products(
     order: Optional[str] = Query("desc", description="Sort order: asc or desc")
 ):
     try:
-        query = supabase.table("products").select("*")
+        query = supabase.table("products").select("*, product_images(image_url)")
         
         if search:
-            query = query.ilike("name", f"%{search}%")
+            term = search.strip()
+            query = query.or_(
+                f"name.ilike.%{term}%,brand.ilike.%{term}%,description.ilike.%{term}%"
+            )
         if category:
-            query = query.eq("category", category)
+            term = category.strip()
+            matched_id = None
+            try:
+                category_match = (
+                    supabase.table("categories")
+                    .select("id")
+                    .or_(f"slug.ilike.%{term}%,name.ilike.%{term}%")
+                    .limit(1)
+                    .execute()
+                )
+                if category_match.data:
+                    matched_id = category_match.data[0].get("id")
+            except Exception:
+                matched_id = None
+            if matched_id:
+                query = query.or_(
+                    f"category.ilike.%{term}%,category_id.eq.{matched_id}"
+                )
+            else:
+                query = query.ilike("category", f"%{term}%")
         if brand:
-            query = query.eq("brand", brand)
+            query = query.ilike("brand", f"%{brand.strip()}%")
         if color:
-            query = query.eq("color", color)
+            query = query.ilike("color", f"%{color.strip()}%")
         if min_price is not None:
             query = query.gte("price", min_price)
         if max_price is not None:
@@ -72,8 +78,8 @@ async def create_product(
     brand: str = Form(...),
     images: List[UploadFile] = File(...),
     description: str = Form(...),
-    color: str = Form(...)
-    #admin_user: dict = Depends(verify_admin)
+    color: str = Form(...),
+    admin_user = Depends(require_admin)
 ):
     # 1. Create the product record first
     new_product = {"name": name, "price": price, "brand": brand, "description": description, "color": color}
@@ -125,8 +131,8 @@ async def update_product(
     brand: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     color: Optional[str] = Form(None),
-    stock_quantity: Optional[int] = Form(None)
-    #admin_user: dict = Depends(verify_admin)
+    stock_quantity: Optional[int] = Form(None),
+    admin_user = Depends(require_admin)
 ):
     # 1. Build a dictionary containing only the fields the user actually provided
     update_data = {}
@@ -149,8 +155,8 @@ async def update_product(
 
 @router.delete("/{product_id}")
 async def delete_product(
-    product_id: str
-    #admin_user: dict = Depends(verify_admin),
+    product_id: str,
+    admin_user = Depends(require_admin)
                                ):
     # Note: To avoid paying for dead storage, you should ideally write a quick loop here 
     # to fetch the image URLs and delete them from the Supabase storage bucket first!
@@ -159,6 +165,12 @@ async def delete_product(
     supabase.table("products").delete().eq("id", product_id).execute()
     
     return {"message": f"Product {product_id} is completely gone."}
+
+@router.get("/{product_id}/reviews")
+def get_product_reviews_alias(product_id: str, current_user = Depends(get_optional_user)):
+    """Public reviews for a product (approved only unless fetched by an admin)."""
+    return list_product_reviews(product_id, current_user)
+
 
 @router.get("/{product_id}")
 async def get_single_product(product_id: str):

@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-600: #1565c0;
+  --color-brand-700: #0b3578;
+  --color-brand-900: #061a40;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  background-color: #f4f7fb;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
