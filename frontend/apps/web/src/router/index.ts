@@ -12,6 +12,7 @@ import NotFoundPage from "../pages/NotFoundPage.vue";
 import OrderTrackingPage from "../pages/OrderTrackingPage.vue";
 import ProductDetailPage from "../pages/ProductDetailPage.vue";
 import ProfilePage from "../pages/ProfilePage.vue";
+import ResetPasswordPage from "../pages/ResetPasswordPage.vue";
 import ShopPage from "../pages/ShopPage.vue";
 import SignupPage from "../pages/SignupPage.vue";
 import WishlistPage from "../pages/WishlistPage.vue";
@@ -22,6 +23,7 @@ const router = createRouter({
     { path: "/login", component: LoginPage },
     { path: "/signup", component: SignupPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
+    { path: "/reset-password", component: ResetPasswordPage },
 
     {
       path: "/",

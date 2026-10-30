@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.database import supabase
 from app.dependencies import get_current_user, security
@@ -24,6 +24,26 @@ class RefreshRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Complete a password reset.
+
+    A Supabase recovery email can arrive in two shapes:
+
+    * an implicit-flow link with ``access_token`` + ``refresh_token`` in the URL
+      fragment (older projects / default templates), or
+    * a ``token_hash`` query parameter (newer email templates using OTP links).
+
+    The client forwards whichever it received; we verify it server-side and
+    then set the new password. The password is never trusted from a bare email
+    address, so an attacker cannot reset an account they do not own.
+    """
+
+    new_password: str = Field(min_length=8, max_length=72)
+    access_token: str | None = None
+    refresh_token: str | None = None
+    token_hash: str | None = None
 
 
 @router.post("/signup")
@@ -96,4 +116,44 @@ def forgot_password(payload: ForgotPasswordRequest):
     return {
         "success": True,
         "message": "If that email is registered, a reset link has been sent.",
+    }
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest):
+    """Finish the reset flow started by ``/auth/forgot-password``.
+
+    The recovery token proves the caller controls the email inbox; only then do
+    we update the password. A missing/invalid/expired token is rejected.
+    """
+    try:
+        access_token = payload.access_token
+        refresh_token = payload.refresh_token
+
+        if payload.token_hash:
+            # Newer Supabase templates send a token_hash instead of raw tokens.
+            verified = supabase.auth.verify_otp(
+                {"token_hash": payload.token_hash, "type": "recovery"}
+            )
+            session = getattr(verified, "session", None)
+            access_token = getattr(session, "access_token", None) or access_token
+            refresh_token = getattr(session, "refresh_token", None) or refresh_token
+
+        if not access_token:
+            raise HTTPException(
+                status_code=400,
+                detail="This reset link is invalid or has expired. Request a new one.",
+            )
+
+        # Make the recovery session the active one, then update the password.
+        supabase.auth.set_session(access_token, refresh_token or "")
+        supabase.auth.update_user({"password": payload.new_password})
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {
+        "success": True,
+        "message": "Password updated. You can now sign in with your new password.",
     }

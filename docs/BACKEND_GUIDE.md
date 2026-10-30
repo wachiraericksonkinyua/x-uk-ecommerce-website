@@ -348,8 +348,14 @@ def process_stk_callback(payload):
 
 - `POST /auth/signup` — creates a user in Supabase.
 - `POST /auth/login` — checks the password, returns `session` (JWT) + `user`.
-- **Missing (build later):** logout, refresh token, forgot/reset password,
-  email verification, and rate-limiting (to stop brute-force).
+- `POST /auth/logout` / `POST /auth/refresh` — revoke a token / mint a fresh
+  session.
+- `POST /auth/forgot-password` → `POST /auth/reset-password` — email a recovery
+  link, then exchange its `access_token`/`refresh_token` (or `token_hash`) for a
+  password update. The token is required, so knowing an email alone is not
+  enough.
+- **Missing (build later):** email verification and rate-limiting (to stop
+  brute-force).
 - **Advice:** never log passwords or tokens. Let Supabase handle password
   hashing — never roll your own.
 
