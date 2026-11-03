@@ -43,7 +43,7 @@ function isCancellable(status: string) {
       <template #action>
         <RouterLink
           to="/shop"
-          class="mt-2 rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="mt-2 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
         >
           Start shopping
         </RouterLink>
@@ -64,7 +64,7 @@ function isCancellable(status: string) {
           <div>
             <RouterLink
               :to="`/track/${order.order_reference}`"
-              class="font-semibold text-slate-900 hover:text-blue-700"
+              class="font-semibold text-slate-900 hover:text-brand-orange"
             >
               {{ order.order_reference }}
             </RouterLink>
@@ -106,7 +106,7 @@ function isCancellable(status: string) {
           <div class="flex gap-2">
             <RouterLink
               :to="`/track/${order.order_reference}`"
-              class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-blue-200 hover:text-blue-700"
+              class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-brand-blue-300 hover:text-brand-orange"
             >
               Track
             </RouterLink>

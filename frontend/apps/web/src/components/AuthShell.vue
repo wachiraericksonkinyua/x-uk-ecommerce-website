@@ -19,7 +19,7 @@ withDefaults(
           class="flex items-center gap-2"
           aria-label="Gadgets With Vin"
         >
-          <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto" />
+          <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto rounded-md" />
         </RouterLink>
       </div>
     </header>

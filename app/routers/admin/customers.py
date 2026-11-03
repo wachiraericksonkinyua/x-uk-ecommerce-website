@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.database import supabase
 from app.utils.pagination import page_range
+from app.utils.search import sanitize_search_term
 
 router = APIRouter(prefix="/customers", tags=["Admin · Customers"])
 
@@ -22,8 +23,9 @@ def list_customers(
     try:
         query = supabase.table("profiles").select("*", count="exact")
         if search:
-            term = search.replace(",", "").strip()
-            query = query.or_(f"full_name.ilike.%{term}%,phone_number.ilike.%{term}%")
+            term = sanitize_search_term(search)
+            if term:
+                query = query.or_(f"full_name.ilike.%{term}%,phone_number.ilike.%{term}%")
         start, end = page_range(page, page_size)
         response = query.order("created_at", desc=True).range(start, end).execute()
         return {

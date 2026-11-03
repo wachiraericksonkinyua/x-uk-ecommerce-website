@@ -40,11 +40,11 @@ const login = useMutation({
 
 <template>
   <div
-    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#061A40] via-[#0B3578] to-[#1565C0] px-4"
+    class="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#C93B00] via-brand-orange to-brand-blue px-4"
   >
     <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
       <div class="flex items-center gap-3">
-        <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto" />
+        <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto rounded-md" />
         <div>
           <h1 class="text-lg font-bold text-slate-900">Admin</h1>
           <p class="text-xs text-slate-500">Authorized personnel only</p>
@@ -61,7 +61,7 @@ const login = useMutation({
             type="email"
             required
             placeholder="admin@x-uk.com"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
           />
         </div>
         <div>
@@ -73,13 +73,13 @@ const login = useMutation({
             type="password"
             required
             placeholder="••••••••"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
           />
         </div>
         <button
           type="submit"
           :disabled="login.isPending.value"
-          class="w-full rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:bg-slate-300"
+          class="w-full rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:bg-slate-300"
         >
           {{ login.isPending.value ? "Signing in…" : "Sign in" }}
         </button>

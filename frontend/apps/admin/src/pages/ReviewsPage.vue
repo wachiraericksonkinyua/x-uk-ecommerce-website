@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
-import { Check, EyeOff, Star, Trash2 } from "@lucide/vue";
+import { Check, EyeOff, Pencil, Plus, Star, Trash2 } from "@lucide/vue";
 import { toast } from "vue-sonner";
 
 import Badge from "../components/Badge.vue";
@@ -9,18 +9,24 @@ import Card from "../components/Card.vue";
 import EmptyState from "../components/EmptyState.vue";
 import PageLoader from "../components/PageLoader.vue";
 import Pagination from "../components/Pagination.vue";
+import ReviewFormModal from "../components/ReviewFormModal.vue";
 import Td from "../components/Td.vue";
 import Th from "../components/Th.vue";
 import { api, errorMessage } from "../lib/api";
 import { useAdminReviews } from "../hooks/queries";
+import type { Review } from "../lib/types";
 import { cn, formatDate } from "../lib/utils";
 
 const queryClient = useQueryClient();
 const page = ref(1);
 const pageSize = 20;
+const editing = ref<Review | "new" | null>(null);
 
 const { data, isLoading } = useAdminReviews(() => ({ page: page.value, pageSize }));
 const reviews = computed(() => data.value?.data ?? []);
+const editingInitial = computed(() =>
+  editing.value && editing.value !== "new" ? editing.value : undefined
+);
 
 const del = useMutation({
   mutationFn: (id: string) => api.del(`/admin/reviews/${id}`),
@@ -50,11 +56,19 @@ function confirmDelete(id: string) {
 
 <template>
   <div>
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-slate-900">Reviews</h1>
-      <p class="text-sm text-slate-500">
-        Moderate verified-buyer product reviews.
-      </p>
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Reviews</h1>
+        <p class="text-sm text-slate-500">
+          Moderate, edit and create verified-buyer product reviews.
+        </p>
+      </div>
+      <button
+        class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+        @click="editing = 'new'"
+      >
+        <Plus :size="16" /> New Review
+      </button>
     </div>
 
     <Card class="overflow-hidden">
@@ -105,7 +119,7 @@ function confirmDelete(id: string) {
                     :class="
                       cn(
                         review.is_approved
-                          ? 'bg-emerald-100 text-emerald-700'
+                          ? 'bg-brand-orange-soft text-brand-orange-dark'
                           : 'bg-amber-100 text-amber-700'
                       )
                     "
@@ -117,13 +131,20 @@ function confirmDelete(id: string) {
                 <Td class="text-right">
                   <div class="flex justify-end gap-1">
                     <button
+                      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-orange"
+                      aria-label="Edit review"
+                      @click="editing = review"
+                    >
+                      <Pencil :size="16" />
+                    </button>
+                    <button
                       :disabled="toggleApproval.isPending.value"
                       :class="
                         cn(
                           'rounded-lg p-2 text-slate-500 disabled:opacity-50',
                           review.is_approved
                             ? 'hover:bg-amber-50 hover:text-amber-600'
-                            : 'hover:bg-emerald-50 hover:text-emerald-600'
+                            : 'hover:bg-brand-orange-soft hover:text-brand-orange'
                         )
                       "
                       :aria-label="
@@ -161,5 +182,11 @@ function confirmDelete(id: string) {
         />
       </template>
     </Card>
+
+    <ReviewFormModal
+      v-if="editing"
+      :initial="editingInitial"
+      @close="editing = null"
+    />
   </div>
 </template>

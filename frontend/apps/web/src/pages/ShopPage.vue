@@ -5,7 +5,9 @@ import { useRoute, useRouter } from "vue-router";
 
 import ProductCard from "../components/ProductCard.vue";
 import EmptyState from "../components/EmptyState.vue";
+import PullToRefreshIndicator from "../components/PullToRefreshIndicator.vue";
 import Spinner from "../components/Spinner.vue";
+import { usePullToRefresh } from "../composables/usePullToRefresh";
 import { useCategories, useProducts } from "../hooks/queries";
 import { cn } from "../lib/utils";
 
@@ -16,8 +18,10 @@ const BRANDS = [
   "OnePlus",
   "Xiaomi",
   "realme",
-  "Huawei",
-  "Oppo",
+  "Anker",
+  "JBL",
+  "Sony",
+  "Bose",
 ];
 
 const COLORS = [
@@ -78,7 +82,12 @@ watch(
 );
 
 const { data: categories } = useCategories();
-const { data: products, isLoading, isError } = useProducts(filters);
+const { data: products, isLoading, isError, refetch } = useProducts(filters);
+const {
+  pullDistance,
+  refreshing: pullRefreshing,
+  ready: pullReady,
+} = usePullToRefresh(() => refetch());
 
 const productList = computed(() => products.value ?? []);
 const categoryList = computed(() => categories.value ?? []);
@@ -156,30 +165,91 @@ function onSortChange(event: Event) {
 </script>
 
 <template>
+  <PullToRefreshIndicator
+    :distance="pullDistance"
+    :refreshing="pullRefreshing"
+    :ready="pullReady"
+  />
   <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">Shop</h1>
-        <p class="text-sm text-slate-500">
-          {{ isLoading ? "Loading…" : `${productList.length} products found` }}
+    <section class="relative overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-12 text-white sm:px-10 sm:py-16">
+      <div class="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-brand-orange/30 blur-3xl" />
+      <div class="pointer-events-none absolute -bottom-28 left-1/3 h-56 w-56 rounded-full bg-brand-blue/20 blur-3xl" />
+      <div class="relative">
+        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-brand-blue-300">
+          The editorial collection
         </p>
+        <h1 class="mt-1 text-[clamp(3.5rem,14vw,9rem)] font-black leading-[0.82] tracking-tighter">
+          Shop
+        </h1>
+        <div class="mt-4 flex flex-wrap items-end justify-between gap-3">
+          <p class="max-w-lg text-sm text-slate-400">
+            Smartphones, audio, power and wearables — curated for how you
+            actually live.
+          </p>
+          <p class="text-xs font-medium text-slate-500">
+            {{ isLoading ? "Loading collection…" : `${productList.length} pieces available` }}
+          </p>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
+    </section>
+
+    <div class="relative z-10 -mt-6 rounded-2xl border border-slate-100 bg-white p-3 shadow-lg sm:p-4">
+      <div class="flex flex-col gap-2 lg:flex-row lg:items-center">
+        <form
+          class="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
+          @submit.prevent="submitSearch"
+        >
+          <Filter :size="16" class="shrink-0 text-slate-400" />
+          <input
+            v-model="searchInput"
+            placeholder="Search the collection"
+            class="min-w-0 flex-1 bg-transparent text-sm outline-none"
+          />
+          <button
+            type="submit"
+            class="rounded-lg bg-brand-orange px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-orange-600"
+          >
+            Search
+          </button>
+        </form>
+
+        <select
+          :value="filters.category"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-orange lg:w-52"
+          @change="onCategoryChange"
+        >
+          <option value="">All categories</option>
+          <option
+            v-for="category in categoryList"
+            :key="category.id"
+            :value="category.name"
+          >
+            {{ category.name }}
+          </option>
+        </select>
+
         <select
           :value="`${filters.sort_by}:${filters.order}`"
-          class="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:border-blue-500 sm:block"
+          class="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-orange lg:w-48"
           @change="onSortChange"
         >
           <option v-for="sort in SORTS" :key="sort.value" :value="sort.value">
             {{ sort.label }}
           </option>
         </select>
+
         <button
-          class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 lg:hidden"
+          class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 transition hover:border-brand-orange hover:text-brand-orange lg:hidden"
           @click="showFilters = !showFilters"
         >
           <X v-if="showFilters" :size="16" />
-          <Filter v-else :size="16" /> Filters
+          <SlidersHorizontal v-else :size="16" /> Filters
+        </button>
+      </div>
+      <div v-if="activeCount > 0" class="mt-2 flex items-center justify-between px-1 text-xs">
+        <span class="text-slate-500">{{ activeCount }} active filter{{ activeCount === 1 ? "" : "s" }}</span>
+        <button class="font-semibold text-brand-orange hover:underline" @click="clearAll">
+          Clear all
         </button>
       </div>
     </div>
@@ -199,51 +269,11 @@ function onSortChange(event: Event) {
             </h3>
             <button
               v-if="activeCount > 0"
-              class="text-xs font-medium text-blue-700 hover:underline"
+              class="text-xs font-medium text-brand-orange hover:underline"
               @click="clearAll"
             >
               Clear all
             </button>
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold uppercase text-slate-500">
-              Search
-            </label>
-            <form class="mt-2" @submit.prevent="submitSearch">
-              <input
-                v-model="searchInput"
-                placeholder="Search products"
-                :class="
-                  filters.search
-                    ? 'w-full rounded-xl border border-blue-400 bg-blue-50 px-3 py-2 text-sm text-blue-900 outline-none focus:border-blue-500'
-                    : 'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-500'
-                "
-              />
-              <p v-if="filters.search" class="mt-2 text-xs text-blue-700">
-                Searching for “{{ filters.search }}”
-              </p>
-            </form>
-          </div>
-
-          <div>
-            <label class="text-xs font-semibold uppercase text-slate-500">
-              Category
-            </label>
-            <select
-              :value="filters.category"
-              class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-500"
-              @change="onCategoryChange"
-            >
-              <option value="">All categories</option>
-              <option
-                v-for="category in categoryList"
-                :key="category.id"
-                :value="category.name"
-              >
-                {{ category.name }}
-              </option>
-            </select>
           </div>
 
           <div>
@@ -256,8 +286,8 @@ function onSortChange(event: Event) {
                 :key="brand"
                 :class="
                   filters.brand === brand
-                    ? 'rounded-full bg-blue-700 px-3 py-1.5 text-xs font-medium text-white'
-                    : 'rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-300 hover:text-blue-700'
+                    ? 'rounded-full bg-brand-orange px-3 py-1.5 text-xs font-medium text-white'
+                    : 'rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-brand-blue-300 hover:text-brand-orange'
                 "
                 @click="update('brand', filters.brand === brand ? '' : brand)"
               >
@@ -276,8 +306,8 @@ function onSortChange(event: Event) {
                 :key="color"
                 :class="
                   filters.color === color
-                    ? 'rounded-full bg-blue-700 px-3 py-1.5 text-xs font-medium text-white'
-                    : 'rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-blue-300 hover:text-blue-700'
+                    ? 'rounded-full bg-brand-orange px-3 py-1.5 text-xs font-medium text-white'
+                    : 'rounded-full border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:border-brand-blue-300 hover:text-brand-orange'
                 "
                 @click="update('color', filters.color === color ? '' : color)"
               >
@@ -298,8 +328,8 @@ function onSortChange(event: Event) {
                 placeholder="Min"
                 :class="
                   filters.min_price
-                    ? 'rounded-xl border border-blue-400 bg-blue-50 px-3 py-2 text-sm text-blue-900 outline-none focus:border-blue-500'
-                    : 'rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-500'
+                    ? 'rounded-xl border border-brand-orange bg-brand-blue-50 px-3 py-2 text-sm text-brand-orange-dark outline-none focus:border-brand-orange'
+                    : 'rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-brand-orange'
                 "
               />
               <input
@@ -309,14 +339,14 @@ function onSortChange(event: Event) {
                 placeholder="Max"
                 :class="
                   filters.max_price
-                    ? 'rounded-xl border border-blue-400 bg-blue-50 px-3 py-2 text-sm text-blue-900 outline-none focus:border-blue-500'
-                    : 'rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-500'
+                    ? 'rounded-xl border border-brand-orange bg-brand-blue-50 px-3 py-2 text-sm text-brand-orange-dark outline-none focus:border-brand-orange'
+                    : 'rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-brand-orange'
                 "
               />
             </div>
             <p
               v-if="filters.min_price || filters.max_price"
-              class="mt-2 text-xs text-blue-700"
+              class="mt-2 text-xs text-brand-orange"
             >
               Active: {{ filters.min_price ? `from KES ${filters.min_price}` : "any min" }}
               {{ filters.max_price ? ` to KES ${filters.max_price}` : " with no max" }}

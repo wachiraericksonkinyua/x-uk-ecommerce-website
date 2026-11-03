@@ -35,13 +35,13 @@ const submit = useMutation({
           type="email"
           required
           placeholder="you@example.com"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <button
         type="submit"
         :disabled="submit.isPending.value"
-        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:bg-slate-300"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:bg-slate-300"
       >
         <Mail :size="16" />
         {{ submit.isPending.value ? "Sending…" : "Send reset link" }}
@@ -49,7 +49,7 @@ const submit = useMutation({
     </form>
 
     <template #footer>
-      <RouterLink to="/login" class="font-semibold text-blue-700 hover:underline">
+      <RouterLink to="/login" class="font-semibold text-brand-orange hover:underline">
         Back to sign in
       </RouterLink>
     </template>

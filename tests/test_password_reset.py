@@ -78,6 +78,32 @@ def test_reset_with_token_hash_verifies_recovery_otp(monkeypatch, client):
     assert auth.updated == [{"password": "newpass123"}]
 
 
+def test_reset_with_email_recovery_code_verifies_otp(monkeypatch, client):
+    session = SimpleNamespace(access_token="otp-access", refresh_token="otp-refresh")
+    auth = FakeAuth(session=session)
+    monkeypatch.setattr(auth_router, "supabase", FakeSupabase(auth))
+
+    resp = client.post(
+        "/auth/reset-password",
+        json={
+            "new_password": "newpass123",
+            "email": "buyer@example.com",
+            "otp_code": "123456",
+        },
+    )
+
+    assert resp.status_code == 200
+    assert auth.verified == [
+        {
+            "email": "buyer@example.com",
+            "token": "123456",
+            "type": "recovery",
+        }
+    ]
+    assert auth.sessions == [("otp-access", "otp-refresh")]
+    assert auth.updated == [{"password": "newpass123"}]
+
+
 def test_reset_rejects_short_password(monkeypatch, client):
     auth = FakeAuth()
     monkeypatch.setattr(auth_router, "supabase", FakeSupabase(auth))

@@ -11,7 +11,6 @@ import Pagination from "../components/Pagination.vue";
 import Td from "../components/Td.vue";
 import Th from "../components/Th.vue";
 import CreateProductModal from "../components/CreateProductModal.vue";
-import EditProductModal from "../components/EditProductModal.vue";
 import ProductImagesModal from "../components/ProductImagesModal.vue";
 import { api, errorMessage } from "../lib/api";
 import {
@@ -46,7 +45,15 @@ const categoryList = computed(() => categories.data.value ?? []);
 const del = useMutation({
   mutationFn: (id: string) => api.del(`/admin/products/${id}`),
   onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    for (const queryKey of [
+      ["admin-products"],
+      ["admin-product"],
+      ["products"],
+      ["product"],
+      ["admin-sales-analytics"],
+    ]) {
+      queryClient.invalidateQueries({ queryKey });
+    }
     toast.success("Product deleted");
   },
   onError: (error) => toast.error(errorMessage(error)),
@@ -79,7 +86,7 @@ function confirmDelete(product: Product) {
         </p>
       </div>
       <button
-        class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+        class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
         @click="createOpen = true"
       >
         <Plus :size="16" /> Create Product
@@ -157,7 +164,7 @@ function confirmDelete(product: Product) {
                     :class="
                       (product.stock_quantity ?? 0) <= 5
                         ? 'rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700'
-                        : 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700'
+                        : 'rounded-full bg-brand-blue-100 px-2.5 py-1 text-xs font-semibold text-brand-blue-700'
                     "
                   >
                     {{ product.stock_quantity ?? 0 }}
@@ -166,14 +173,14 @@ function confirmDelete(product: Product) {
                 <Td class="text-right">
                   <div class="flex justify-end gap-1">
                     <button
-                      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-700"
+                      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-orange"
                       aria-label="Edit"
                       @click="editProduct = product"
                     >
                       <Pencil :size="16" />
                     </button>
                     <button
-                      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-700"
+                      class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-orange"
                       aria-label="Images"
                       @click="imagesProduct = product"
                     >
@@ -203,12 +210,13 @@ function confirmDelete(product: Product) {
 
     <CreateProductModal
       v-if="createOpen"
-      :open="createOpen"
+      :open="true"
       :categories="categoryList"
       @close="createOpen = false"
     />
-    <EditProductModal
+    <CreateProductModal
       v-if="editProduct"
+      :open="true"
       :product="editProduct"
       :categories="categoryList"
       @close="editProduct = null"

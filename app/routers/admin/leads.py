@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from app.database import supabase
 from app.services.whatsapp import log_message, send_whatsapp_message
 from app.utils.pagination import page_range
+from app.utils.search import sanitize_search_term
 
 router = APIRouter(prefix="/leads", tags=["Admin · Leads"])
 
@@ -71,8 +72,9 @@ def list_leads(
         if status:
             query = query.eq("status", status)
         if search:
-            term = search.replace(",", "").strip()
-            query = query.or_(f"name.ilike.%{term}%,phone.ilike.%{term}%")
+            term = sanitize_search_term(search)
+            if term:
+                query = query.or_(f"name.ilike.%{term}%,phone.ilike.%{term}%")
         start, end = page_range(page, page_size)
         response = query.order("last_message_at", desc=True).range(start, end).execute()
         return {

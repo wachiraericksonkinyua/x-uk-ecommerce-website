@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import AdminGuard from "../components/AdminGuard.vue";
+import AnalyticsPage from "../pages/AnalyticsPage.vue";
 import CategoriesPage from "../pages/CategoriesPage.vue";
 import CustomersPage from "../pages/CustomersPage.vue";
 import DashboardPage from "../pages/DashboardPage.vue";
@@ -20,6 +21,7 @@ const router = createRouter({
       component: AdminGuard,
       children: [
         { path: "", component: DashboardPage },
+        { path: "analytics", component: AnalyticsPage },
         { path: "orders", component: OrdersPage },
         { path: "products", component: ProductsPage },
         { path: "categories", component: CategoriesPage },

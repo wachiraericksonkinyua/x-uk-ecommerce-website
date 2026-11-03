@@ -44,6 +44,8 @@ class ResetPasswordRequest(BaseModel):
     access_token: str | None = None
     refresh_token: str | None = None
     token_hash: str | None = None
+    email: EmailStr | None = None
+    otp_code: str | None = None
 
 
 @router.post("/signup")
@@ -129,6 +131,23 @@ def reset_password(payload: ResetPasswordRequest):
     try:
         access_token = payload.access_token
         refresh_token = payload.refresh_token
+
+        if payload.otp_code:
+            if not payload.email:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email is required when using a recovery code",
+                )
+            verified = supabase.auth.verify_otp(
+                {
+                    "email": str(payload.email),
+                    "token": payload.otp_code.strip(),
+                    "type": "recovery",
+                }
+            )
+            session = getattr(verified, "session", None)
+            access_token = getattr(session, "access_token", None) or access_token
+            refresh_token = getattr(session, "refresh_token", None) or refresh_token
 
         if payload.token_hash:
             # Newer Supabase templates send a token_hash instead of raw tokens.

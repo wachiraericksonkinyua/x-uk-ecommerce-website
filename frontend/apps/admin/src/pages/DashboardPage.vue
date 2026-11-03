@@ -23,10 +23,10 @@ const products = computed(
 );
 
 const tones: Record<string, string> = {
-  blue: "bg-blue-50 text-blue-700",
+  blue: "bg-brand-blue-50 text-brand-blue-700",
   amber: "bg-amber-50 text-amber-700",
   rose: "bg-rose-50 text-rose-700",
-  emerald: "bg-emerald-50 text-emerald-700",
+  orange: "bg-brand-orange-soft text-brand-orange-dark",
 };
 
 const stats = computed(() => {
@@ -37,7 +37,7 @@ const stats = computed(() => {
       icon: DollarSign,
       label: "Daily Revenue",
       value: formatKES(current.daily_revenue),
-      tone: "emerald",
+      tone: "orange",
     },
     {
       icon: ShoppingCart,

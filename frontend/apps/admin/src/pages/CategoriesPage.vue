@@ -49,7 +49,7 @@ function confirmDelete(category: Category) {
         </p>
       </div>
       <button
-        class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+        class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
         @click="editing = 'new'"
       >
         <Plus :size="16" /> New Category
@@ -80,7 +80,7 @@ function confirmDelete(category: Category) {
               <Td>
                 <div class="flex items-center gap-3">
                   <span
-                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700"
+                    class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-blue-50 text-brand-orange"
                   >
                     <Tags :size="16" />
                   </span>
@@ -97,7 +97,7 @@ function confirmDelete(category: Category) {
                 <span
                   :class="
                     category.active
-                      ? 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700'
+                      ? 'rounded-full bg-brand-blue-100 px-2.5 py-1 text-xs font-semibold text-brand-blue-700'
                       : 'rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600'
                   "
                 >
@@ -107,7 +107,7 @@ function confirmDelete(category: Category) {
               <Td class="text-right">
                 <div class="flex justify-end gap-1">
                   <button
-                    class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-700"
+                    class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-orange"
                     aria-label="Edit"
                     @click="editing = category"
                   >

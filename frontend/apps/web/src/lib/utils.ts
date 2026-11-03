@@ -52,15 +52,17 @@ export function orderStepIndex(status?: string | null): number {
 export function statusColor(status?: string | null): string {
   switch (status) {
     case "Paid":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-brand-orange-soft text-brand-orange-dark";
     case "Processing":
-      return "bg-blue-100 text-blue-700";
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Shipped":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Delivered":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-brand-orange-soft text-brand-orange-dark";
     case "Cancelled":
       return "bg-slate-200 text-slate-600";
+    case "Refunded":
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Payment Failed":
       return "bg-rose-100 text-rose-700";
     case "Pending PIN":

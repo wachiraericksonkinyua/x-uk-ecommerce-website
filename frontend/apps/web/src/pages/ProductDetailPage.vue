@@ -16,7 +16,9 @@ import { toast } from "vue-sonner";
 
 import PageLoader from "../components/PageLoader.vue";
 import EmptyState from "../components/EmptyState.vue";
+import PullToRefreshIndicator from "../components/PullToRefreshIndicator.vue";
 import StarRating from "../components/StarRating.vue";
+import { usePullToRefresh } from "../composables/usePullToRefresh";
 import { api, errorMessage } from "../lib/api";
 import { useProduct, useReviews } from "../hooks/queries";
 import { useRequireAuth } from "../hooks/useRequireAuth";
@@ -28,9 +30,14 @@ const queryClient = useQueryClient();
 
 const id = computed(() => route.params.id as string | undefined);
 
-const { data: product, isLoading, isError } = useProduct(id);
-const { data: reviews } = useReviews(id);
+const { data: product, isLoading, isError, refetch } = useProduct(id);
+const { data: reviews, refetch: refetchReviews } = useReviews(id);
 const reviewList = computed(() => reviews.value ?? []);
+const {
+  pullDistance,
+  refreshing: pullRefreshing,
+  ready: pullReady,
+} = usePullToRefresh(() => Promise.all([refetch(), refetchReviews()]));
 
 const activeImage = ref(0);
 const quantity = ref(1);
@@ -87,9 +94,23 @@ const infoPills = computed(() => [
   {
     icon: ShieldCheck,
     label: "Category",
-    value: product.value?.category || "Smartphones",
+    value: product.value?.category || "Electronics",
   },
 ]);
+
+const specEntries = computed(() => {
+  const specs = product.value?.specs;
+  if (!specs || typeof specs !== "object") return [];
+  return Object.entries(specs)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .map(([key, value]) => ({
+      label: key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/[-_]/g, " ")
+        .replace(/^\w/, (character) => character.toUpperCase()),
+      value: typeof value === "object" ? JSON.stringify(value) : String(value),
+    }));
+});
 
 function decreaseQuantity() {
   quantity.value = Math.max(1, quantity.value - 1);
@@ -120,6 +141,11 @@ async function addToWishlist() {
 </script>
 
 <template>
+  <PullToRefreshIndicator
+    :distance="pullDistance"
+    :refreshing="pullRefreshing"
+    :ready="pullReady"
+  />
   <PageLoader v-if="isLoading" label="Loading product…" />
 
   <div v-else-if="isError || !product" class="mx-auto max-w-3xl px-4 py-16">
@@ -140,7 +166,7 @@ async function addToWishlist() {
               cn(
                 'flex aspect-square items-center justify-center overflow-hidden rounded-xl border bg-white p-1 transition',
                 activeImage === index
-                  ? 'border-blue-600 ring-1 ring-blue-600'
+                  ? 'border-brand-orange ring-1 ring-brand-orange'
                   : 'border-slate-200 hover:border-slate-300'
               )
             "
@@ -196,7 +222,7 @@ async function addToWishlist() {
             :key="pill.label"
             class="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"
           >
-            <span class="text-blue-700">
+            <span class="text-brand-orange">
               <component :is="pill.icon" :size="16" />
             </span>
             <div>
@@ -206,6 +232,29 @@ async function addToWishlist() {
               <p class="text-sm font-medium text-slate-700">{{ pill.value }}</p>
             </div>
           </div>
+        </div>
+
+        <div
+          v-if="product.compatibility || specEntries.length > 0"
+          class="mt-6 rounded-2xl border border-brand-blue-200 bg-brand-blue-50/70 p-4"
+        >
+          <p class="text-xs font-semibold uppercase tracking-wide text-brand-blue-700">
+            Technical details
+          </p>
+          <p v-if="product.compatibility" class="mt-2 text-sm text-slate-700">
+            <span class="font-medium text-slate-900">Compatible with:</span>
+            {{ product.compatibility }}
+          </p>
+          <dl v-if="specEntries.length > 0" class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div
+              v-for="spec in specEntries"
+              :key="spec.label"
+              class="flex items-center justify-between gap-3 rounded-lg bg-white/80 px-3 py-2 text-sm"
+            >
+              <dt class="text-slate-500">{{ spec.label }}</dt>
+              <dd class="text-right font-medium text-slate-800">{{ spec.value }}</dd>
+            </div>
+          </dl>
         </div>
 
         <div class="mt-8 flex flex-wrap items-center gap-4">
@@ -230,8 +279,9 @@ async function addToWishlist() {
           </div>
 
           <button
+            v-magnetic
             :disabled="outOfStock || addToCart.isPending.value"
-            class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-8 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 hover:shadow-[0_16px_32px_-14px_rgba(255,79,0,0.7)] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             @click="handleAddToCart"
           >
             <ShoppingCart :size="18" />
@@ -311,11 +361,11 @@ async function addToWishlist() {
             v-model="comment"
             rows="4"
             placeholder="Share your experience…"
-            class="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            class="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-brand-orange"
           />
           <button
             :disabled="!comment.trim() || addReview.isPending.value"
-            class="mt-3 w-full rounded-full bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            class="mt-3 w-full rounded-full bg-brand-orange px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300"
             @click="handleAddReview"
           >
             {{ addReview.isPending.value ? "Submitting…" : "Submit Review" }}

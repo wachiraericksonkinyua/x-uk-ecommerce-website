@@ -13,6 +13,10 @@ export interface Product {
   category?: string | null;
   category_id?: string | null;
   stock_quantity?: number | null;
+  compatibility?: string | null;
+  specs?: Record<string, unknown> | null;
+  review_count?: number | null;
+  average_rating?: number | null;
   image_url?: string | null;
   product_images?: ProductImage[] | null;
   created_at?: string;
@@ -78,6 +82,10 @@ export interface Order {
   total_amount: number;
   status: string;
   receipt_number?: string | null;
+  is_verified?: boolean | null;
+  refunded_at?: string | null;
+  refund_reason?: string | null;
+  refund_amount?: number | null;
   items: OrderItem[];
   created_at?: string;
 }
@@ -114,4 +122,5 @@ export type OrderStatus =
   | "Shipped"
   | "Delivered"
   | "Cancelled"
-  | "Payment Failed";
+  | "Payment Failed"
+  | "Refunded";

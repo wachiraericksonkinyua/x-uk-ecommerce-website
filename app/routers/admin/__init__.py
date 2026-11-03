@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies import require_admin
 from app.routers.admin import (
+    analytics,
     categories,
     customers,
     dashboard,
@@ -25,6 +26,7 @@ router = APIRouter(
 )
 
 router.include_router(dashboard.router)
+router.include_router(analytics.router)
 router.include_router(orders.router)
 router.include_router(products.router)
 router.include_router(categories.router)

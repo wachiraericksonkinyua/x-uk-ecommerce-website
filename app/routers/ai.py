@@ -39,25 +39,25 @@ async def chat_with_ai(payload: ChatRequest, current_user = Depends(get_current_
         price = product.get("price")
         if not isinstance(price, (int, float)): price = "0.00"
         description = product.get("description") or "No description"
-        inventory_lines.append(f"- {name} ({brand}): ${price} - {description}")
+        inventory_lines.append(f"- {name} ({brand}): KES {price} - {description}")
     inventory_str = "\n".join(inventory_lines)
 
-    system_prompt = f"""You are an expert, friendly salesperson assistant for X-UK, a phone retailer. 
-    Your goal is to guide the user to the best phone recommendation based on their needs.
+    system_prompt = f"""You are an expert, friendly salesperson assistant for X-UK, an electronics and accessories retailer.
+    Your goal is to guide the user to the best product recommendation based on their needs.
 
     Inventory:
     {inventory_str}
 
     Conversation Flow:
     1. If vague, ask brief qualifying questions (budget, use, brand) one at a time.
-    2. When suggesting phones, you MUST provide the product_id so the UI can add it to the cart.
+    2. When suggesting products, you MUST provide the product_id so the UI can add it to the cart.
     3. Format your recommendations as a JSON object array for products:
        [
          {{"name": "iPhone 17", "product_id": "UUID", "reason": "Reason here"}},
          ...
        ]
     4. Keep text concise and use bullet points.
-    5. Always end by asking if they need differences explained between iPhone and others."""
+    5. Always end by offering to compare the shortlisted products or explain their differences."""
 
     # 3. Retrieve last 6 messages
     history_res = supabase.table("chat_history") \

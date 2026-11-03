@@ -24,6 +24,10 @@ class _FakeTable:
         self._update = None
         self._insert = None
         self._delete = False
+        self._single = False
+        self._range = None
+        self._less_than = {}
+        self._or_conditions = []
 
     def select(self, *args, **kwargs):
         return self
@@ -52,6 +56,28 @@ class _FakeTable:
         self._ilike_conditions[column] = pattern
         return self
 
+    def or_(self, expression):
+        self._or_conditions.append(expression)
+        return self
+
+    def lt(self, column, value):
+        self._less_than[column] = value
+        return self
+
+    def single(self):
+        self._single = True
+        return self
+
+    def order(self, *args, **kwargs):
+        return self
+
+    def limit(self, *args, **kwargs):
+        return self
+
+    def range(self, start, end):
+        self._range = (start, end)
+        return self
+
     def _matches(self, row):
         if any(row.get(k) != v for k, v in self._conditions.items()):
             return False
@@ -61,12 +87,39 @@ class _FakeTable:
             regex = "^" + re.escape(pattern).replace("%", ".*").replace("_", ".") + "$"
             if not re.match(regex, str(row.get(column) or ""), re.IGNORECASE):
                 return False
+        for column, value in self._less_than.items():
+            try:
+                if int(row.get(column) or 0) >= int(value):
+                    return False
+            except (TypeError, ValueError):
+                return False
+
+        for expression in self._or_conditions:
+            matched = False
+            for part in expression.split(","):
+                match = re.match(r"^([^.]+)\.(ilike|eq)\.(.*)$", part)
+                if not match:
+                    continue
+                column, operator, value = match.groups()
+                cell = str(row.get(column) or "")
+                if operator == "eq" and cell == value:
+                    matched = True
+                    break
+                if operator == "ilike":
+                    pattern = "^" + re.escape(value).replace("%", ".*").replace("_", ".") + "$"
+                    if re.match(pattern, cell, re.IGNORECASE):
+                        matched = True
+                        break
+            if not matched:
+                return False
         return True
 
     def execute(self):
         rows = self.store.setdefault(self.name, [])
 
         if self._insert is not None:
+            if isinstance(self._insert, dict):
+                self._insert.setdefault("id", f"{self.name}-{len(rows) + 1}")
             rows.append(self._insert)
             return _Resp([self._insert])
 
@@ -83,7 +136,13 @@ class _FakeTable:
             return _Resp(matched)
 
         # select: return copies so tests can assert on the store independently
-        return _Resp([dict(row) for row in matched])
+        selected = [dict(row) for row in matched]
+        if self._range:
+            start, end = self._range
+            selected = selected[start : end + 1]
+        if self._single:
+            return _Resp(selected[0] if selected else None)
+        return _Resp(selected)
 
 
 class FakeSupabase:

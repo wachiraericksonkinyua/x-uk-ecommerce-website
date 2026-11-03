@@ -60,7 +60,7 @@ function selectStatus(value: string) {
             cn(
               'rounded-full px-3 py-1 text-xs font-medium capitalize',
               status === ''
-                ? 'bg-blue-700 text-white'
+                ? 'bg-brand-orange text-white'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             )
           "
@@ -75,7 +75,7 @@ function selectStatus(value: string) {
             cn(
               'rounded-full px-3 py-1 text-xs font-medium capitalize',
               status === value
-                ? 'bg-blue-700 text-white'
+                ? 'bg-brand-orange text-white'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             )
           "
@@ -100,7 +100,7 @@ function selectStatus(value: string) {
           :class="
             cn(
               'flex w-full items-start gap-3 border-b border-slate-50 px-4 py-3 text-left transition hover:bg-slate-50',
-              selectedId === lead.id && 'bg-blue-50'
+              selectedId === lead.id && 'bg-brand-blue-50'
             )
           "
           @click="emit('select', lead)"

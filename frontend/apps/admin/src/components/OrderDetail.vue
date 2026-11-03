@@ -56,5 +56,28 @@ defineProps<{ order: Order }>();
         <span class="font-mono">{{ order.receipt_number }}</span>
       </div>
     </div>
+
+    <div class="rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm">
+      <p class="text-xs font-semibold uppercase text-slate-400">Risk review</p>
+      <p class="mt-1 text-slate-700">
+        {{ order.is_verified ? "Verified by admin" : "Not verified yet" }}
+      </p>
+      <p v-if="order.verification_note" class="mt-1 text-xs text-slate-500">
+        Note: {{ order.verification_note }}
+      </p>
+      <p v-if="order.verified_at" class="mt-1 text-xs text-slate-400">
+        Verified {{ order.verified_at }}
+      </p>
+    </div>
+
+    <div v-if="order.status === 'Refunded'" class="rounded-xl border border-brand-blue-200 bg-brand-blue-50 p-3 text-sm">
+      <p class="text-xs font-semibold uppercase text-brand-blue-700">Refund</p>
+      <p class="mt-1 text-slate-700">
+        Amount: {{ formatKES(order.refund_amount ?? order.total_amount) }}
+      </p>
+      <p v-if="order.refund_reason" class="mt-1 text-xs text-slate-500">
+        Reason: {{ order.refund_reason }}
+      </p>
+    </div>
   </div>
 </template>

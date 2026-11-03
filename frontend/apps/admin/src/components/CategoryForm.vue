@@ -47,7 +47,7 @@ const save = useMutation({
         <input
           v-model="form.name"
           required
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -57,7 +57,7 @@ const save = useMutation({
         <input
           v-model="form.slug"
           placeholder="auto-generated from name"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -67,7 +67,7 @@ const save = useMutation({
         <textarea
           v-model="form.description"
           rows="2"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -76,7 +76,7 @@ const save = useMutation({
         </label>
         <input
           v-model="form.image_url"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <label class="flex items-center gap-2 text-sm text-slate-600">
@@ -98,7 +98,7 @@ const save = useMutation({
         <button
           type="submit"
           :disabled="save.isPending.value"
-          class="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:bg-slate-300"
+          class="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
         >
           {{ save.isPending.value ? "Saving…" : "Save" }}
         </button>

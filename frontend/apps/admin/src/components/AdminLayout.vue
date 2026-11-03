@@ -34,7 +34,7 @@ const open = ref(false);
           <Menu v-else :size="20" />
         </button>
         <RouterLink to="/" class="flex items-center gap-2 font-bold text-slate-900">
-          <img src="/logo.png" alt="Gadgets With Vin" class="h-8 w-auto" />
+          <img src="/logo.png" alt="Gadgets With Vin" class="h-8 w-auto rounded-md" />
           Admin
         </RouterLink>
       </header>

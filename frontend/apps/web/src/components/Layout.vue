@@ -9,8 +9,6 @@ import {
   Package,
   Search,
   ShoppingBag,
-  Store,
-  Truck,
   User,
   X,
 } from "@lucide/vue";
@@ -21,6 +19,7 @@ import { useCategories, useCart, useWishlist } from "../hooks/queries";
 import { useAuthStore } from "../store/auth";
 import { cn } from "../lib/utils";
 import AiAssistant from "./AiAssistant.vue";
+import AppFooter from "./AppFooter.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -42,8 +41,8 @@ const cartCount = computed(() =>
 
 function navClass(active: boolean) {
   return active
-    ? "text-sm font-semibold text-blue-700"
-    : "text-sm font-medium text-slate-600 transition hover:text-blue-700";
+    ? "text-sm font-semibold text-brand-orange"
+    : "text-sm font-medium text-slate-600 transition hover:text-brand-orange";
 }
 
 function submitSearch() {
@@ -77,7 +76,7 @@ function closeMenu() {
           class="flex items-center gap-2"
           aria-label="Gadgets With Vin"
         >
-          <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto" />
+          <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto rounded-md" />
         </RouterLink>
 
         <nav class="hidden items-center gap-6 lg:flex">
@@ -89,7 +88,7 @@ function closeMenu() {
           </RouterLink>
           <div class="group relative">
             <button
-              class="flex items-center gap-1 text-sm font-medium text-slate-600 transition hover:text-blue-700"
+              class="flex items-center gap-1 text-sm font-medium text-slate-600 transition hover:text-brand-orange"
             >
               Categories <ChevronDown :size="15" />
             </button>
@@ -106,7 +105,7 @@ function closeMenu() {
                 v-for="category in categories ?? []"
                 :key="category.id"
                 :to="`/shop?category=${encodeURIComponent(category.name)}`"
-                class="block rounded-xl px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-blue-700"
+                class="block rounded-xl px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-orange"
               >
                 {{ category.name }}
               </RouterLink>
@@ -148,13 +147,13 @@ function closeMenu() {
           </RouterLink>
           <RouterLink
             to="/cart"
-            class="relative rounded-full p-2 text-slate-600 transition hover:bg-slate-50 hover:text-blue-700"
+            class="relative rounded-full p-2 text-slate-600 transition hover:bg-slate-50 hover:text-brand-orange"
             aria-label="Cart"
           >
             <ShoppingBag :size="20" />
             <span
               v-if="cartCount > 0"
-              class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-700 px-1 text-[10px] font-bold text-white"
+              class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-orange px-1 text-[10px] font-bold text-white"
             >
               {{ cartCount }}
             </span>
@@ -162,7 +161,7 @@ function closeMenu() {
 
           <div v-if="auth.token" class="relative hidden sm:block">
             <button
-              class="flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+              class="flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-brand-blue-300 hover:text-brand-orange"
               @click="accountOpen = !accountOpen"
             >
               <User :size="16" />
@@ -200,7 +199,7 @@ function closeMenu() {
           <RouterLink
             v-else
             to="/login"
-            class="hidden rounded-full bg-blue-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-800 sm:inline-flex"
+            class="hidden rounded-full bg-brand-orange px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-600 sm:inline-flex"
           >
             Login
           </RouterLink>
@@ -285,7 +284,7 @@ function closeMenu() {
           <RouterLink
             v-else
             to="/login"
-            class="rounded-xl bg-blue-700 px-3 py-2 text-center text-sm font-medium text-white"
+            class="rounded-xl bg-brand-orange px-3 py-2 text-center text-sm font-medium text-white"
             @click="closeMenu"
           >
             Login
@@ -294,79 +293,11 @@ function closeMenu() {
       </div>
     </header>
 
-    <main class="flex-1">
+    <main class="flex-1 pb-24 md:pb-0">
       <RouterView />
     </main>
 
-    <footer class="mt-16 bg-[#061A40] text-slate-300">
-      <div
-        class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4"
-      >
-        <div>
-          <div class="flex items-center gap-2 text-white">
-            <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto" />
-          </div>
-          <p class="mt-3 text-sm text-slate-400">
-            Premium UK-used smartphones delivered countrywide. 100% M-Pesa
-            verified.
-          </p>
-        </div>
-        <div>
-          <h4 class="text-sm font-semibold text-white">Shop</h4>
-          <ul class="mt-3 space-y-2 text-sm">
-            <li>
-              <RouterLink to="/shop" class="hover:text-white">
-                All Products
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                to="/shop?sort_by=created_at&order=desc"
-                class="hover:text-white"
-              >
-                New Arrivals
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/track" class="hover:text-white">
-                Track Order
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm font-semibold text-white">Account</h4>
-          <ul class="mt-3 space-y-2 text-sm">
-            <li>
-              <RouterLink to="/profile" class="hover:text-white">
-                My Profile
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/orders" class="hover:text-white">
-                My Orders
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink to="/wishlist" class="hover:text-white">
-                Wishlist
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-sm font-semibold text-white">Support</h4>
-          <ul class="mt-3 space-y-2 text-sm">
-            <li class="flex items-center gap-2"><Truck :size="15" /> Fast delivery</li>
-            <li class="flex items-center gap-2"><Store :size="15" /> Physical store</li>
-          </ul>
-        </div>
-      </div>
-      <div class="border-t border-white/10 py-5 text-center text-xs text-slate-400">
-        &copy; {{ new Date().getFullYear() }} GWV-xuk. All rights reserved.
-      </div>
-    </footer>
-
+    <AppFooter />
     <AiAssistant />
   </div>
 </template>

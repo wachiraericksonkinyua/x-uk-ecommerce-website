@@ -1,16 +1,65 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from app.database import supabase
 
-# Order statuses during which product stock is being held
+# Statuses where stock is held but payment has not been confirmed. A late
+# failure callback must only release stock from these states.
 STOCK_HELD_STATUSES = {"Pending PIN", "Processing"}
 
+# Statuses where one physical unit has already been taken out of stock and a
+# refund should put it back. Cancelled/Payment Failed are deliberately excluded
+# because their stock was already restored.
+STOCK_DEDUCTED_STATUSES = {"Pending PIN", "Processing", "Paid", "Shipped", "Delivered"}
 
-def restore_order_stock(order: Dict[str, Any]) -> None:
+
+def record_inventory_movement(
+    *,
+    product_id: Optional[str],
+    change_qty: int,
+    reason: str,
+    order_id: Optional[str] = None,
+    quantity_before: Optional[int] = None,
+    quantity_after: Optional[int] = None,
+    unit_price: Any = None,
+    note: Optional[str] = None,
+    created_by: Optional[str] = None,
+) -> None:
+    """Append an inventory ledger row.
+
+    Logging must never break the business operation (e.g. if migration 007 has
+    not been applied yet), so write failures are deliberately swallowed and
+    surfaced only in the server log.
+    """
+    try:
+        supabase.table("inventory_movements").insert(
+            {
+                "product_id": product_id,
+                "order_id": order_id,
+                "change_qty": int(change_qty),
+                "quantity_before": quantity_before,
+                "quantity_after": quantity_after,
+                "unit_price": unit_price,
+                "reason": reason,
+                "note": note,
+                "created_by": created_by,
+            }
+        ).execute()
+    except Exception as exc:  # pragma: no cover - depends on live schema
+        print(f"[inventory] movement log skipped: {exc}")
+
+
+def restore_order_stock(
+    order: Dict[str, Any],
+    *,
+    reason: str = "stock_restore",
+    created_by: Optional[str] = None,
+) -> None:
     """Increment product stock back for every line item on an order."""
     items = order.get("items")
     if not isinstance(items, list):
         return
+
+    order_id = order.get("id")
 
     for item in items:
         if not isinstance(item, dict):
@@ -42,12 +91,29 @@ def restore_order_stock(order: Dict[str, Any]) -> None:
         except (TypeError, ValueError):
             current_stock = 0
 
+        new_stock = current_stock + quantity
         supabase.table("products").update(
-            {"stock_quantity": current_stock + quantity}
+            {"stock_quantity": new_stock}
         ).eq("id", product_id).execute()
 
+        record_inventory_movement(
+            product_id=product_id,
+            order_id=order_id,
+            change_qty=quantity,
+            quantity_before=current_stock,
+            quantity_after=new_stock,
+            unit_price=item.get("price"),
+            reason=reason,
+            created_by=created_by,
+        )
 
-def hold_order_stock(order: Dict[str, Any]) -> None:
+
+def hold_order_stock(
+    order: Dict[str, Any],
+    *,
+    reason: str = "stock_hold",
+    created_by: Optional[str] = None,
+) -> None:
     """Decrement product stock for every line item.
 
     Mirror of :func:`restore_order_stock`, used when a previously released order
@@ -58,6 +124,8 @@ def hold_order_stock(order: Dict[str, Any]) -> None:
     if not isinstance(items, list):
         return
 
+    order_id = order.get("id")
+
     for item in items:
         if not isinstance(item, dict):
             continue
@@ -88,12 +156,29 @@ def hold_order_stock(order: Dict[str, Any]) -> None:
         except (TypeError, ValueError):
             current_stock = 0
 
+        new_stock = max(0, current_stock - quantity)
         supabase.table("products").update(
-            {"stock_quantity": max(0, current_stock - quantity)}
+            {"stock_quantity": new_stock}
         ).eq("id", product_id).execute()
 
+        record_inventory_movement(
+            product_id=product_id,
+            order_id=order_id,
+            change_qty=-(current_stock - new_stock),
+            quantity_before=current_stock,
+            quantity_after=new_stock,
+            unit_price=item.get("price"),
+            reason=reason,
+            created_by=created_by,
+        )
 
-def release_stock_once(order: Dict[str, Any], new_status: str = "Payment Failed") -> bool:
+
+def release_stock_once(
+    order: Dict[str, Any],
+    new_status: str = "Payment Failed",
+    *,
+    created_by: Optional[str] = None,
+) -> bool:
     """Atomically move a still-held order to a failed/cancelled state and restore stock.
 
     The status guard in the UPDATE makes this safe against duplicate callback
@@ -122,5 +207,10 @@ def release_stock_once(order: Dict[str, Any], new_status: str = "Payment Failed"
         # Another concurrent handler already transitioned this order
         return False
 
-    restore_order_stock(order)
+    reason = {
+        "Cancelled": "cancel",
+        "Refunded": "refund",
+        "Payment Failed": "payment_failed",
+    }.get(new_status, "stock_restore")
+    restore_order_stock(order, reason=reason, created_by=created_by)
     return True

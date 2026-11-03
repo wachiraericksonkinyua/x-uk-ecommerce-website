@@ -80,7 +80,7 @@ function submit() {
           type="email"
           required
           placeholder="you@example.com"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -92,7 +92,7 @@ function submit() {
           type="password"
           required
           placeholder="At least 6 characters"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -104,13 +104,13 @@ function submit() {
           type="password"
           required
           placeholder="Re-enter password"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <button
         type="submit"
         :disabled="signup.isPending.value"
-        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:bg-slate-300"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:bg-slate-300"
       >
         <UserPlus :size="16" />
         {{ signup.isPending.value ? "Creating account…" : "Create account" }}
@@ -119,7 +119,7 @@ function submit() {
 
     <template #footer>
       Already have an account?
-      <RouterLink to="/login" class="font-semibold text-blue-700 hover:underline">
+      <RouterLink to="/login" class="font-semibold text-brand-orange hover:underline">
         Sign in
       </RouterLink>
     </template>

@@ -42,7 +42,7 @@ function onRoleChange(event: Event) {
     <div class="rounded-xl bg-slate-50 p-4">
       <div class="flex items-center gap-3">
         <span
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700"
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-blue-100 text-brand-orange"
         >
           <User :size="22" />
         </span>
@@ -72,7 +72,7 @@ function onRoleChange(event: Event) {
     <div class="flex items-center justify-between rounded-xl border border-slate-100 p-4">
       <div class="flex items-center gap-3">
         <span
-          class="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-blue-50 text-brand-blue-700"
         >
           <ShieldCheck :size="18" />
         </span>
@@ -86,7 +86,7 @@ function onRoleChange(event: Event) {
       <select
         :value="currentRole"
         :disabled="updateRole.isPending.value"
-        class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm capitalize outline-none focus:border-blue-500 disabled:opacity-50"
+        class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm capitalize outline-none focus:border-brand-orange disabled:opacity-50"
         @change="onRoleChange"
       >
         <option value="customer">Customer</option>

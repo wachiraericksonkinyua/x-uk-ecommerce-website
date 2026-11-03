@@ -122,7 +122,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
 
   <div v-else-if="result" class="mx-auto max-w-xl px-4 py-20 text-center">
     <div
-      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-700"
+      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-blue-100 text-brand-orange"
     >
       <Smartphone :size="30" />
     </div>
@@ -135,7 +135,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
       <Spinner class="h-6 w-6" />
     </div>
     <button
-      class="mt-6 rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+      class="mt-6 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
       @click="router.push(`/track/${result.order_id}`)"
     >
       View order status
@@ -149,7 +149,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
     <EmptyState title="Nothing to checkout" description="Your cart is empty.">
       <template #action>
         <button
-          class="mt-2 rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="mt-2 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
           @click="router.push('/shop')"
         >
           Browse products
@@ -167,7 +167,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
           :class="
             cn(
               'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
-              index === 0 ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-500'
+              index === 0 ? 'bg-brand-orange text-white' : 'bg-slate-200 text-slate-500'
             )
           "
         >
@@ -194,7 +194,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
                 cn(
                   'rounded-xl border px-4 py-3 text-sm font-medium transition',
                   fulfillment === option
-                    ? 'border-blue-600 bg-blue-50 text-blue-700'
+                    ? 'border-brand-orange bg-brand-blue-50 text-brand-orange'
                     : 'border-slate-200 text-slate-600 hover:border-slate-300'
                 )
               "
@@ -206,14 +206,14 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
 
           <div
             v-if="isPickup"
-            class="mt-5 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4"
+            class="mt-5 flex items-start gap-3 rounded-xl border border-brand-blue-200 bg-brand-blue-50 p-4"
           >
-            <MapPin :size="18" class="mt-0.5 shrink-0 text-emerald-600" />
+            <MapPin :size="18" class="mt-0.5 shrink-0 text-brand-orange" />
             <div>
-              <p class="text-sm font-semibold text-emerald-800">
+              <p class="text-sm font-semibold text-brand-orange-dark">
                 Store Pickup — Free
               </p>
-              <p class="mt-0.5 text-xs text-emerald-700">
+              <p class="mt-0.5 text-xs text-brand-blue-700">
                 Collect from our shop. No delivery fee.
               </p>
             </div>
@@ -228,7 +228,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
               </label>
               <select
                 v-model="locationId"
-                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
               >
                 <option value="">Select a location</option>
                 <option
@@ -248,7 +248,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
               <input
                 v-model="address"
                 placeholder="e.g. Kilimani, Wood Avenue, Apt 4B"
-                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
               />
             </div>
           </template>
@@ -267,7 +267,7 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
                 v-model="email"
                 type="email"
                 placeholder="you@example.com"
-                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
               />
             </div>
             <div>
@@ -277,11 +277,11 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
               <input
                 v-model="phone"
                 placeholder="2547XXXXXXXX"
-                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
               />
             </div>
           </div>
-          <p class="mt-3 rounded-xl bg-blue-50 px-3 py-2 text-xs text-blue-700">
+          <p class="mt-3 rounded-xl bg-brand-blue-50 px-3 py-2 text-xs text-brand-orange">
             You'll receive an STK Push prompt on your phone. Enter your M-Pesa
             PIN to complete payment.
           </p>
@@ -336,8 +336,9 @@ onBeforeUnmount(() => clearTimeout(redirectTimer));
           </div>
 
           <button
+            v-magnetic
             :disabled="!canSubmit || checkout.isPending.value"
-            class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 hover:shadow-[0_16px_32px_-14px_rgba(255,79,0,0.7)] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             @click="checkout.mutate()"
           >
             <CheckCircle2 :size="18" />

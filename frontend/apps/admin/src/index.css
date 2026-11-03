@@ -1,10 +1,5 @@
 @import "tailwindcss";
-
-@theme {
-  --color-brand-600: #1565c0;
-  --color-brand-700: #0b3578;
-  --color-brand-900: #061a40;
-}
+@config "../tailwind.config.js";
 
 html,
 body,
@@ -13,9 +8,20 @@ body,
 }
 
 body {
-  background-color: #f4f7fb;
+  background-color: #f7fafd;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: #96c5f7;
+  color: #0f172a;
+}
+
+/* Consistent, brand-coloured keyboard focus across both apps. */
+:focus-visible {
+  outline: 2px solid #ff4f00;
+  outline-offset: 2px;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -24,4 +30,30 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@layer base {
+  button {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms ease,
+      border-color 220ms ease,
+      background-color 220ms ease;
+  }
+
+  button:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    box-shadow: 0 0 0 3px rgba(150, 197, 247, 0.35);
+  }
+}
+
+@layer components {
+  .card-lift {
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-blue-300 hover:shadow-[0_18px_38px_-24px_rgba(15,23,42,0.3)];
+  }
 }

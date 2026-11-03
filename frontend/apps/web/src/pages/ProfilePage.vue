@@ -95,7 +95,7 @@ function onDateInput(event: Event) {
             <User v-else class="text-slate-400" :size="30" />
           </div>
           <button
-            class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-blue-700 text-white shadow"
+            class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-brand-orange text-white shadow"
             aria-label="Upload avatar"
             @click="fileRef?.click()"
           >
@@ -130,7 +130,7 @@ function onDateInput(event: Event) {
           </label>
           <input
             v-model="form.full_name"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
           />
         </div>
         <div>
@@ -140,7 +140,7 @@ function onDateInput(event: Event) {
           <input
             v-model="form.phone_number"
             placeholder="2547XXXXXXXX"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
           />
         </div>
         <div class="sm:col-span-2">
@@ -149,7 +149,7 @@ function onDateInput(event: Event) {
           </label>
           <input
             v-model="form.address"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
           />
         </div>
         <div>
@@ -159,7 +159,7 @@ function onDateInput(event: Event) {
           <input
             type="date"
             :value="form.date_of_birth?.slice(0, 10) ?? ''"
-            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+            class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
             @input="onDateInput"
           />
         </div>
@@ -167,7 +167,7 @@ function onDateInput(event: Event) {
           <button
             type="submit"
             :disabled="save.isPending.value"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:bg-slate-300"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:bg-slate-300"
           >
             <Save :size="16" />
             {{ save.isPending.value ? "Saving…" : "Save changes" }}

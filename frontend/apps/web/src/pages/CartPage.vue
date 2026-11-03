@@ -55,7 +55,7 @@ const subtotal = computed(() =>
       <template #action>
         <RouterLink
           to="/shop"
-          class="mt-2 inline-flex rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="mt-2 inline-flex rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
         >
           Start shopping
         </RouterLink>
@@ -88,7 +88,7 @@ const subtotal = computed(() =>
           <div class="min-w-[8rem] flex-1">
             <RouterLink
               :to="`/products/${item.product_id}`"
-              class="text-sm font-semibold text-slate-800 hover:text-blue-700"
+              class="text-sm font-semibold text-slate-800 hover:text-brand-orange"
             >
               {{ item.products?.name ?? "Product" }}
             </RouterLink>
@@ -162,14 +162,14 @@ const subtotal = computed(() =>
             <span>{{ formatKES(subtotal) }}</span>
           </div>
           <button
-            class="mt-5 w-full rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800"
+            class="mt-5 w-full rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
             @click="router.push('/checkout')"
           >
             Proceed to Checkout
           </button>
           <RouterLink
             to="/shop"
-            class="mt-3 block text-center text-sm font-medium text-blue-700 hover:underline"
+            class="mt-3 block text-center text-sm font-medium text-brand-orange hover:underline"
           >
             Continue shopping
           </RouterLink>

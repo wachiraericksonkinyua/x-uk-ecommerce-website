@@ -112,7 +112,7 @@ function send() {
       <div class="flex flex-wrap items-center gap-2">
         <select
           :value="status"
-          class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs capitalize outline-none focus:border-blue-500"
+          class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs capitalize outline-none focus:border-brand-orange"
           @change="onStatusChange"
         >
           <option v-for="value in LEAD_STATUSES" :key="value" :value="value">
@@ -151,7 +151,7 @@ function send() {
             cn(
               'max-w-[80%] rounded-2xl px-3 py-2 text-sm',
               message.direction === 'outbound'
-                ? 'ml-auto rounded-br-sm bg-emerald-600 text-white'
+                ? 'ml-auto rounded-br-sm bg-brand-orange text-white'
                 : 'mr-auto rounded-bl-sm border border-slate-100 bg-white text-slate-700'
             )
           "
@@ -162,7 +162,7 @@ function send() {
               cn(
                 'mt-1 text-[10px]',
                 message.direction === 'outbound'
-                  ? 'text-emerald-100'
+                  ? 'text-white/75'
                   : 'text-slate-400'
               )
             "
@@ -197,12 +197,12 @@ function send() {
         <input
           v-model="reply"
           placeholder="Type a WhatsApp reply…"
-          class="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand-orange"
           @keydown.enter="send"
         />
         <button
           :disabled="sendReply.isPending.value || !reply.trim()"
-          class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:bg-slate-300"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-orange text-white transition hover:bg-orange-600 disabled:bg-slate-300"
           aria-label="Send reply"
           @click="send"
         >

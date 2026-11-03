@@ -50,11 +50,11 @@ const update = useMutation({
           v-model="value"
           type="number"
           min="0"
-          class="w-24 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm outline-none focus:border-blue-500"
+          class="w-24 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm outline-none focus:border-brand-orange"
         />
         <button
           :disabled="update.isPending.value"
-          class="inline-flex items-center gap-1 rounded-full bg-blue-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-800 disabled:bg-slate-300"
+          class="inline-flex items-center gap-1 rounded-full bg-brand-orange px-3 py-1.5 text-xs font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
           @click="update.mutate()"
         >
           <Check :size="13" /> Save

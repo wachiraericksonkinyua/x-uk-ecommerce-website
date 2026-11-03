@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+import re
 import uuid
 from typing import Any, List, Optional
 from fastapi import APIRouter, HTTPException, Request, Depends
 from app.database import supabase
 from app.routers.daraja_service import DarajaService
 from app.utils.email import send_receipt_email
-from app.dependencies import get_current_user, require_admin
-from app.services.inventory import hold_order_stock, release_stock_once, restore_order_stock
+from app.dependencies import get_current_user, require_admin, user_is_admin
+from app.services.inventory import (
+    hold_order_stock,
+    record_inventory_movement,
+    release_stock_once,
+    restore_order_stock,
+)
 from app.services.mpesa import apply_stk_result, process_stk_callback
 from pydantic import BaseModel, EmailStr
 
@@ -88,6 +94,69 @@ def _normalize_phone(phone: Optional[str]) -> str:
         return "254" + digits
     return digits
 
+
+RECEIPT_PATTERN = re.compile(r"^[A-Z0-9]{10}$")
+
+
+def _mask_email(value: Any) -> str:
+    if not isinstance(value, str) or "@" not in value:
+        return ""
+    local, domain = value.split("@", 1)
+    return f"{local[:1]}***@{domain}"
+
+
+def _mask_phone(value: Any) -> str:
+    digits = "".join(ch for ch in str(value or "") if ch.isdigit())
+    if len(digits) < 4:
+        return ""
+    return f"{'*' * max(0, len(digits) - 4)}{digits[-4:]}"
+
+
+def _mask_address(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        return ""
+    text = value.strip()
+    if len(text) <= 8:
+        return "*" * len(text)
+    return f"{text[:8]}… (hidden)"
+
+
+def _public_order(order: dict) -> dict:
+    """Return the safe subset of an order for the public tracking endpoint.
+
+    Raw email, phone, address, user id, receipt number and checkout request id
+    are never exposed. Customers can still see status/items/totals and the
+    masked contact details needed to recognise their own order.
+    """
+    items = order.get("items") if isinstance(order.get("items"), list) else []
+    safe_items = [
+        {
+            "id": item.get("id"),
+            "name": item.get("name"),
+            "price": item.get("price"),
+            "qty": item.get("qty"),
+            "image": item.get("image") or "",
+        }
+        for item in items
+        if isinstance(item, dict)
+    ]
+
+    return {
+        "id": order.get("id"),
+        "order_reference": order.get("order_reference"),
+        "status": order.get("status"),
+        "fulfillment": order.get("fulfillment"),
+        "location_name": order.get("location_name"),
+        "delivery_cost": order.get("delivery_cost"),
+        "payment_method": order.get("payment_method"),
+        "total_amount": order.get("total_amount"),
+        "customer_email": _mask_email(order.get("customer_email")),
+        "customer_phone": _mask_phone(order.get("customer_phone")),
+        "delivery_address": _mask_address(order.get("delivery_address")),
+        "items": safe_items,
+        "created_at": order.get("created_at"),
+    }
+
 @router.get("/me")
 def get_my_orders(current_user = Depends(get_current_user)):
     """Fetch orders for the currently authenticated user."""
@@ -115,7 +184,7 @@ def cancel_my_order(order_id: str, current_user = Depends(get_current_user)):
         if order.get("status") in {"Shipped", "Delivered", "Cancelled"}:
             raise HTTPException(status_code=400, detail="Order can no longer be cancelled")
 
-        if not release_stock_once(order, "Cancelled"):
+        if not release_stock_once(order, "Cancelled", created_by=current_user.id):
             # Not holding stock (e.g. already Paid) — just mark it cancelled.
             supabase.table("orders").update({"status": "Cancelled"}).eq("id", order_id).execute()
 
@@ -147,6 +216,15 @@ def get_all_orders(admin_user = Depends(require_admin)):
 @router.post("/checkout", status_code=201)
 async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_current_user)):
     try:
+        # Strict payment enforcement: only M-Pesa is supported today.
+        payment_method = (payload.payment_method or "").strip()
+        normalized_method = payment_method.lower().replace(" ", "")
+        if normalized_method not in {"m-pesa", "mpesa"}:
+            raise HTTPException(
+                status_code=400,
+                detail="Only M-Pesa is accepted at checkout",
+            )
+
         # 0. Resolve fulfillment: pickup is always free and needs no location.
         is_pickup = (payload.fulfillment or "").strip().lower() == "pickup"
 
@@ -242,9 +320,19 @@ async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_
                 current_stock = _coerce_stock_quantity(prod_res.data[0].get("stock_quantity"), line["name"])
                 new_stock = max(0, current_stock - line["qty"])
                 supabase.table("products").update({"stock_quantity": new_stock}).eq("id", line["id"]).execute()
+                record_inventory_movement(
+                    product_id=line["id"],
+                    order_id=order_uuid,
+                    change_qty=-(current_stock - new_stock),
+                    quantity_before=current_stock,
+                    quantity_after=new_stock,
+                    unit_price=line["price"],
+                    reason="sale",
+                    created_by=current_user.id,
+                )
         except Exception:
             # Roll back any partial decrements and remove the dangling order
-            restore_order_stock(order_record)
+            restore_order_stock(order_record, reason="checkout_rollback", created_by=current_user.id)
             supabase.table("orders").delete().eq("id", order_uuid).execute()
             raise
 
@@ -335,7 +423,7 @@ async def track_order_by_reference(order_ref: str):
                 except Exception as exc:
                     print(f"[orders] STK status query failed for {order_ref}: {exc}")
 
-        return {"success": True, "data": order}
+        return {"success": True, "data": _public_order(order) if isinstance(order, dict) else order}
     except HTTPException:
         raise
     except Exception as e:
@@ -343,15 +431,24 @@ async def track_order_by_reference(order_ref: str):
 
 
 @router.post("/{order_id}/verify-receipt")
-def verify_receipt(order_id: str, payload: ReceiptVerify):
+def verify_receipt(
+    order_id: str,
+    payload: ReceiptVerify,
+    current_user=Depends(get_current_user),
+):
     """Customer fallback: confirm payment using the M-Pesa message code.
 
-    Marks a pending/failed order as Paid, stores the receipt and finalizes the
-    stock adjustment. Accepts either the order UUID or the short reference.
+    Only the order owner (or an admin) may verify. Receipts must be exactly ten
+    uppercase alphanumeric characters and cannot be reused by another order.
     """
-    receipt_number = (payload.receipt_number or "").strip()
+    receipt_number = (payload.receipt_number or "").strip().upper()
     if not receipt_number:
         raise HTTPException(status_code=400, detail="An M-Pesa receipt number is required")
+    if not RECEIPT_PATTERN.fullmatch(receipt_number):
+        raise HTTPException(
+            status_code=400,
+            detail="M-Pesa receipt numbers must be exactly 10 letters or digits",
+        )
 
     try:
         res = supabase.table("orders").select("*").eq("id", order_id).execute()
@@ -361,15 +458,41 @@ def verify_receipt(order_id: str, payload: ReceiptVerify):
             raise HTTPException(status_code=404, detail="Order not found")
 
         order = res.data[0]
+
+        # Ownership enforcement. Admins may resolve suspicious orders.
+        if order.get("user_id") != current_user.id and not user_is_admin(current_user):
+            raise HTTPException(status_code=403, detail="You do not own this order")
+
         current_status = order.get("status")
 
         if current_status == "Paid":
-            return {"success": True, "message": "Payment already verified", "data": order}
+            return {"success": True, "message": "Payment already verified", "data": _public_order(order)}
 
         if current_status not in RECEIPT_VERIFIABLE_STATUSES:
             raise HTTPException(
                 status_code=400,
                 detail=f"Order cannot be verified from status '{current_status}'",
+            )
+
+        # Reject reuse of a receipt that already belongs to another order.
+        existing = (
+            supabase.table("orders")
+            .select("id, order_reference, receipt_number")
+            .eq("receipt_number", receipt_number)
+            .execute()
+        )
+        reused = next(
+            (
+                row
+                for row in (existing.data or [])
+                if isinstance(row, dict) and row.get("id") != order.get("id")
+            ),
+            None,
+        )
+        if reused:
+            raise HTTPException(
+                status_code=409,
+                detail="This M-Pesa receipt has already been used for another order",
             )
 
         updated = (
@@ -387,7 +510,7 @@ def verify_receipt(order_id: str, payload: ReceiptVerify):
 
         # A failed payment already released its stock — hold it again now that it's paid.
         if current_status == "Payment Failed":
-            hold_order_stock(order)
+            hold_order_stock(order, reason="receipt_rehold", created_by=current_user.id)
 
         customer_email = order.get("customer_email")
         if isinstance(customer_email, str) and customer_email:
@@ -402,7 +525,7 @@ def verify_receipt(order_id: str, payload: ReceiptVerify):
             except Exception as exc:
                 print(f"[orders] receipt email failed for {order_id}: {exc}")
 
-        return {"success": True, "message": "Payment verified", "data": updated.data[0]}
+        return {"success": True, "message": "Payment verified", "data": _public_order(updated.data[0])}
     except HTTPException:
         raise
     except Exception as e:

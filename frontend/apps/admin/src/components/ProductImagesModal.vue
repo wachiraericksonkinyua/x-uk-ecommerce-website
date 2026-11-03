@@ -107,7 +107,7 @@ function submitUpload() {
         />
         <button
           :disabled="upload.isPending.value"
-          class="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:bg-slate-300"
+          class="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
           @click="submitUpload"
         >
           <Upload :size="15" />

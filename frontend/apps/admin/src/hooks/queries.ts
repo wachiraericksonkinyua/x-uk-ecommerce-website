@@ -14,6 +14,7 @@ import type {
   Paginated,
   Product,
   Review,
+  SalesAnalytics,
   WhatsAppMessage,
 } from "../lib/types";
 
@@ -22,6 +23,19 @@ export function useDashboardSummary() {
     queryKey: ["admin-dashboard"],
     queryFn: () => api.get<DashboardSummary>("/admin/dashboard/summary"),
     refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useSalesAnalytics(days = 14, lowStockThreshold = 5) {
+  return useQuery({
+    queryKey: ["admin-sales-analytics", days, lowStockThreshold],
+    queryFn: () =>
+      api.get<SalesAnalytics>("/admin/analytics/sales", {
+        days,
+        low_stock_threshold: lowStockThreshold,
+      }),
+    refetchInterval: 30000,
     refetchOnWindowFocus: true,
   });
 }

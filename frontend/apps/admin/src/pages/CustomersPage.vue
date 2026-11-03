@@ -84,7 +84,7 @@ function submitSearch() {
                 <Td>
                   <div class="flex items-center gap-3">
                     <span
-                      class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700"
+                      class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-blue-50 text-brand-orange"
                     >
                       <User :size="16" />
                     </span>

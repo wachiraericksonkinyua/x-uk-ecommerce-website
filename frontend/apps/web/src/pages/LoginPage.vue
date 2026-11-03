@@ -58,7 +58,7 @@ const login = useMutation({
           type="email"
           required
           placeholder="you@example.com"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -68,7 +68,7 @@ const login = useMutation({
           </label>
           <RouterLink
             to="/forgot-password"
-            class="text-xs font-medium text-blue-700 hover:underline"
+            class="text-xs font-medium text-brand-orange hover:underline"
           >
             Forgot?
           </RouterLink>
@@ -78,13 +78,13 @@ const login = useMutation({
           type="password"
           required
           placeholder="••••••••"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <button
         type="submit"
         :disabled="login.isPending.value"
-        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:bg-slate-300"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-orange px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:bg-slate-300"
       >
         <LogIn :size="16" />
         {{ login.isPending.value ? "Signing in…" : "Sign in" }}
@@ -93,7 +93,7 @@ const login = useMutation({
 
     <template #footer>
       New here?
-      <RouterLink to="/signup" class="font-semibold text-blue-700 hover:underline">
+      <RouterLink to="/signup" class="font-semibold text-brand-orange hover:underline">
         Create an account
       </RouterLink>
     </template>

@@ -1,27 +1,63 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
 
 @theme {
-  --color-brand-50: #eef4fc;
-  --color-brand-100: #d6e4f7;
-  --color-brand-600: #1565c0;
-  --color-brand-700: #0b3578;
-  --color-brand-900: #061a40;
-
-  /* Infinite horizontal marquee for the hero product slider. */
+  /* Brand motion — infinite horizontal marquee for the hero slider. */
   --animate-marquee: marquee 40s linear infinite;
 
   @keyframes marquee {
     from {
-      transform: translateX(0);
+      transform: translate3d(0, 0, 0);
     }
     to {
-      transform: translateX(-50%);
+      transform: translate3d(-50%, 0, 0);
     }
   }
 }
 
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+  animation-play-state: running;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes marquee-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@keyframes marquee-down {
+  from {
+    transform: translate3d(0, -50%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-marquee-up {
+  animation: marquee-up 28s linear infinite;
+  animation-play-state: running;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.animate-marquee-down {
+  animation: marquee-down 34s linear infinite;
+  animation-play-state: running;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee {
+  .animate-marquee,
+  .animate-marquee-up,
+  .animate-marquee-down {
     animation: none;
   }
 }
@@ -33,9 +69,20 @@ body,
 }
 
 body {
-  background-color: #f4f7fb;
+  background-color: #f7fafd;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: #96c5f7;
+  color: #0f172a;
+}
+
+/* Consistent, brand-coloured keyboard focus across both apps. */
+:focus-visible {
+  outline: 2px solid #ff4f00;
+  outline-offset: 2px;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -44,4 +91,54 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@layer base {
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms ease,
+      border-color 220ms ease,
+      background-color 220ms ease;
+  }
+
+  button:active:not(:disabled),
+  a:active {
+    transform: scale(0.985);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    box-shadow: 0 0 0 3px rgba(150, 197, 247, 0.35);
+  }
+}
+
+@layer components {
+  .btn-brand {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-orange-600 hover:shadow-[0_14px_30px_-12px_rgba(255,79,0,0.7)] focus-visible:outline-brand-orange disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none;
+  }
+
+  .btn-soft {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-blue-300 bg-brand-blue-50 px-5 py-2.5 text-sm font-semibold text-brand-blue-700 transition-all duration-200 hover:border-brand-orange hover:bg-white hover:text-brand-orange hover:shadow-[0_12px_26px_-16px_rgba(47,111,163,0.65)];
+  }
+
+  .card-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:border-brand-blue-300 hover:shadow-[0_22px_45px_-24px_rgba(15,23,42,0.35)];
+  }
+
+  .glow-border {
+    @apply border border-brand-blue-200 transition-all duration-300 hover:border-brand-orange hover:shadow-[0_0_0_3px_rgba(255,79,0,0.1),0_14px_30px_-18px_rgba(255,79,0,0.5)];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-brand,
+  .btn-soft,
+  .card-lift,
+  .glow-border {
+    transition: none;
+  }
 }

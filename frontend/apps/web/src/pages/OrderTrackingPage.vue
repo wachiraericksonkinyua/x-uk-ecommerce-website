@@ -17,6 +17,9 @@ import { toast } from "vue-sonner";
 
 import EmptyState from "../components/EmptyState.vue";
 import PageLoader from "../components/PageLoader.vue";
+import PullToRefreshIndicator from "../components/PullToRefreshIndicator.vue";
+import SegmentedCodeInput from "../components/SegmentedCodeInput.vue";
+import { usePullToRefresh } from "../composables/usePullToRefresh";
 import { api, errorMessage } from "../lib/api";
 import { useTrackOrder } from "../hooks/queries";
 import { useAuthStore } from "../store/auth";
@@ -40,7 +43,12 @@ const orderRef = computed(() =>
 const search = ref("");
 const receipt = ref("");
 
-const { data: order, isLoading, isError, error } = useTrackOrder(orderRef);
+const { data: order, isLoading, isError, error, refetch } = useTrackOrder(orderRef);
+const {
+  pullDistance,
+  refreshing: pullRefreshing,
+  ready: pullReady,
+} = usePullToRefresh(() => refetch());
 
 const cancelOrder = useMutation({
   mutationFn: (orderId: string) => api.post(`/orders/${orderId}/cancel`),
@@ -70,7 +78,11 @@ function submitSearch() {
 
 function submitReceipt() {
   const code = receipt.value.trim();
-  if (code) verifyReceipt.mutate(code);
+  if (code.length !== 10) {
+    toast.error("Enter the 10-character M-Pesa receipt code.");
+    return;
+  }
+  verifyReceipt.mutate(code);
 }
 
 const isPaidOrBeyond = computed(
@@ -81,7 +93,7 @@ const isPaidOrBeyond = computed(
 const isTerminal = computed(
   () =>
     !!order.value &&
-    ["Cancelled", "Payment Failed"].includes(order.value.status)
+    ["Cancelled", "Payment Failed", "Refunded"].includes(order.value.status)
 );
 const currentStep = computed(() => orderStepIndex(order.value?.status));
 const cancellable = computed(
@@ -98,10 +110,15 @@ const needsManualVerify = computed(
 </script>
 
 <template>
+  <PullToRefreshIndicator
+    :distance="pullDistance"
+    :refreshing="pullRefreshing"
+    :ready="pullReady"
+  />
   <div v-if="!orderRef" class="mx-auto max-w-xl px-4 py-20">
     <div class="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
       <div
-        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-700"
+        class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-blue-50 text-brand-orange"
       >
         <Search :size="26" />
       </div>
@@ -113,10 +130,11 @@ const needsManualVerify = computed(
         <input
           v-model="search"
           placeholder="GWV-XXXX"
-          class="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
         <button
-          class="rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          v-magnetic
+          class="rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 hover:shadow-[0_14px_28px_-14px_rgba(255,79,0,0.7)]"
         >
           Track
         </button>
@@ -130,7 +148,7 @@ const needsManualVerify = computed(
     <EmptyState title="Order not found" :description="errorMessage(error)">
       <template #action>
         <button
-          class="mt-2 rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="mt-2 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
           @click="router.push('/track')"
         >
           Try another reference
@@ -142,12 +160,12 @@ const needsManualVerify = computed(
   <div v-else class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
     <div
       v-if="isPaidOrBeyond"
-      class="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4"
+      class="flex items-center gap-3 rounded-2xl border border-brand-blue-200 bg-brand-blue-50 px-5 py-4"
     >
-      <CheckCircle2 class="text-emerald-600" :size="26" />
+      <CheckCircle2 class="text-brand-orange" :size="26" />
       <div>
-        <p class="font-semibold text-emerald-800">Order Placed Successfully!</p>
-        <p class="text-sm text-emerald-600">
+        <p class="font-semibold text-brand-orange-dark">Order Placed Successfully!</p>
+        <p class="text-sm text-brand-orange-dark/80">
           Payment received. We're preparing your order.
         </p>
       </div>
@@ -180,12 +198,12 @@ const needsManualVerify = computed(
 
     <div
       v-if="!isTerminal"
-      class="mt-6 flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4"
+      class="mt-6 flex items-start gap-3 rounded-2xl border border-brand-blue-200 bg-brand-blue-50 px-5 py-4"
     >
-      <Info class="mt-0.5 shrink-0 text-blue-600" :size="22" />
+      <Info class="mt-0.5 shrink-0 text-brand-orange" :size="22" />
       <div>
-        <p class="font-semibold text-blue-800">What happens next?</p>
-        <p class="text-sm text-blue-600">
+        <p class="font-semibold text-brand-orange-dark">What happens next?</p>
+        <p class="text-sm text-brand-orange">
           Our team will call or message you shortly to coordinate your pickup or
           delivery details.
         </p>
@@ -200,19 +218,20 @@ const needsManualVerify = computed(
         <ReceiptText :size="16" /> Already paid?
       </h2>
       <p class="mt-1 text-sm text-amber-700">
-        Did you pay via M-Pesa? Paste your M-Pesa message code here (e.g.,
-        QHS8X9...)
+        Did you pay via M-Pesa? Enter the 10-character receipt code from your
+        M-Pesa message.
       </p>
-      <form class="mt-3 flex flex-col gap-2 sm:flex-row" @submit.prevent="submitReceipt">
-        <input
+      <form class="mt-3 flex flex-col items-center gap-4" @submit.prevent="submitReceipt">
+        <SegmentedCodeInput
           v-model="receipt"
-          placeholder="e.g. QHS8X9ABCD"
-          class="flex-1 rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm uppercase tracking-wide outline-none focus:border-amber-500"
+          :length="10"
+          alphanumeric
+          label="M-Pesa receipt code"
         />
         <button
           type="submit"
-          :disabled="!receipt.trim() || verifyReceipt.isPending.value"
-          class="rounded-xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          :disabled="receipt.length !== 10 || verifyReceipt.isPending.value"
+          class="w-full rounded-xl bg-brand-orange px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
         >
           {{ verifyReceipt.isPending.value ? "Verifying…" : "Verify Payment" }}
         </button>
@@ -248,8 +267,8 @@ const needsManualVerify = computed(
                   cn(
                     'flex h-8 w-8 items-center justify-center rounded-full border-2',
                     currentStep >= index && !isTerminal
-                      ? 'border-blue-700 bg-blue-700 text-white'
-                      : 'border-slate-200 bg-white text-slate-300'
+                      ? 'border-brand-orange bg-brand-orange text-white shadow-brand'
+                      : 'border-brand-blue-200 bg-brand-blue-50 text-brand-blue-700'
                   )
                 "
               >
@@ -261,7 +280,7 @@ const needsManualVerify = computed(
                 :class="
                   cn(
                     'my-1 h-8 w-0.5',
-                    currentStep > index && !isTerminal ? 'bg-blue-700' : 'bg-slate-200'
+                    currentStep > index && !isTerminal ? 'bg-brand-orange' : 'bg-slate-200'
                   )
                 "
               />
@@ -272,7 +291,7 @@ const needsManualVerify = computed(
                   cn(
                     'text-sm',
                     currentStep === index && !isTerminal
-                      ? 'font-semibold text-blue-700'
+                      ? 'font-semibold text-brand-orange'
                       : currentStep >= index && !isTerminal
                         ? 'font-medium text-slate-800'
                         : 'text-slate-400'

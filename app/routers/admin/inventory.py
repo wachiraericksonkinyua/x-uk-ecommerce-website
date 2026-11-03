@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.database import supabase
+from app.dependencies import require_admin
+from app.services.inventory import record_inventory_movement
 
 router = APIRouter(prefix="/inventory", tags=["Admin · Inventory"])
 
@@ -28,9 +30,23 @@ def low_stock(
 
 
 @router.patch("/{product_id}")
-def set_stock(product_id: str, payload: StockUpdate):
-    """Set the absolute stock quantity for a product."""
+def set_stock(
+    product_id: str,
+    payload: StockUpdate,
+    admin_user=Depends(require_admin),
+):
+    """Set the absolute stock quantity for a product and log the movement."""
     try:
+        current_res = (
+            supabase.table("products")
+            .select("id, name, stock_quantity")
+            .eq("id", product_id)
+            .execute()
+        )
+        if not current_res.data or not isinstance(current_res.data[0], dict):
+            raise HTTPException(status_code=404, detail="Product not found")
+        before = int(current_res.data[0].get("stock_quantity") or 0)
+
         response = (
             supabase.table("products")
             .update({"stock_quantity": payload.stock_quantity})
@@ -39,6 +55,16 @@ def set_stock(product_id: str, payload: StockUpdate):
         )
         if not response.data:
             raise HTTPException(status_code=404, detail="Product not found")
+
+        record_inventory_movement(
+            product_id=product_id,
+            change_qty=payload.stock_quantity - before,
+            quantity_before=before,
+            quantity_after=payload.stock_quantity,
+            reason="adjustment",
+            note="Admin stock update",
+            created_by=getattr(admin_user, "id", None),
+        )
         return {"success": True, "data": response.data}
     except HTTPException:
         raise

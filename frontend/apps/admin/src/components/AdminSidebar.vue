@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useQueryClient } from "@tanstack/vue-query";
 import {
+  BarChart3,
   LayoutDashboard,
   LogOut,
   MessageCircle,
@@ -20,6 +21,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/analytics", label: "Sales & Analytics", icon: BarChart3, end: false },
   { to: "/orders", label: "Orders", icon: ShoppingCart, end: false },
   { to: "/products", label: "Products", icon: Package, end: false },
   { to: "/categories", label: "Categories", icon: Tags, end: false },
@@ -46,9 +48,9 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="flex h-full flex-col bg-[#061A40] text-slate-300">
+  <div class="flex h-full flex-col border-r-4 border-brand-orange bg-slate-900 text-slate-300">
     <div class="flex items-center gap-2 px-5 py-5">
-      <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto" />
+      <img src="/logo.png" alt="Gadgets With Vin" class="h-10 w-auto rounded-md" />
       <span class="text-[11px] font-medium uppercase tracking-wide text-slate-400">
         Admin
       </span>
@@ -63,8 +65,8 @@ function handleLogout() {
           cn(
             'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
             isActive(item.to, item.end)
-              ? 'bg-blue-700 text-white'
-              : 'text-slate-300 hover:bg-white/5 hover:text-white'
+              ? 'bg-brand-orange text-white shadow-brand'
+              : 'text-slate-300 hover:bg-brand-blue/10 hover:text-white'
           )
         "
         @click="emit('close')"

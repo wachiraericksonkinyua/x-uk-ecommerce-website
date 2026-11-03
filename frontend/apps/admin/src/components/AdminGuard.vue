@@ -63,7 +63,7 @@ function signOut() {
       </p>
       <div class="mt-6 flex justify-center gap-3">
         <button
-          class="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
           @click="signOut"
         >
           Sign out

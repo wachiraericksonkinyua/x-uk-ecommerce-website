@@ -51,7 +51,7 @@ const addToCart = useMutation({
       <template #action>
         <RouterLink
           to="/shop"
-          class="mt-2 rounded-full bg-blue-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+          class="mt-2 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
         >
           Browse products
         </RouterLink>
@@ -83,7 +83,7 @@ const addToCart = useMutation({
         <div class="flex flex-1 flex-col">
           <RouterLink
             :to="`/products/${item.products!.id}`"
-            class="line-clamp-2 text-sm font-semibold text-slate-800 hover:text-blue-700"
+            class="line-clamp-2 text-sm font-semibold text-slate-800 hover:text-brand-orange"
           >
             {{ item.products!.name }}
           </RouterLink>
@@ -95,7 +95,7 @@ const addToCart = useMutation({
           </p>
           <div class="mt-auto flex items-center gap-2 pt-2">
             <button
-              class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
+              class="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-brand-orange px-3 py-2 text-xs font-semibold text-white hover:bg-orange-600"
               @click="addToCart.mutate(item.products!.id)"
             >
               <ShoppingCart :size="14" /> Add

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.database import supabase
 from app.utils.pagination import page_range
@@ -11,6 +11,50 @@ router = APIRouter(prefix="/reviews", tags=["Admin · Reviews"])
 
 class ReviewApproval(BaseModel):
     is_approved: bool
+
+
+class ReviewAdminCreate(BaseModel):
+    product_id: str
+    user_id: str
+    rating: int = Field(..., ge=1, le=5)
+    comment: str
+    is_approved: bool = True
+
+
+class ReviewAdminUpdate(BaseModel):
+    rating: Optional[int] = Field(None, ge=1, le=5)
+    comment: Optional[str] = None
+    is_approved: Optional[bool] = None
+
+
+@router.post("", status_code=201)
+def create_review(payload: ReviewAdminCreate):
+    """Admin-created review (e.g. migrating legacy feedback)."""
+    try:
+        response = supabase.table("reviews").insert(payload.model_dump()).execute()
+        if not response.data:
+            raise HTTPException(status_code=400, detail="Failed to create review")
+        return {"success": True, "data": response.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch("/{review_id}")
+def update_review(review_id: str, payload: ReviewAdminUpdate):
+    data = payload.model_dump(exclude_unset=True)
+    if not data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    try:
+        response = supabase.table("reviews").update(data).eq("id", review_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Review not found")
+        return {"success": True, "data": response.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("")

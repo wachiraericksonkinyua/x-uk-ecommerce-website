@@ -53,7 +53,7 @@ const save = useMutation({
           v-model="form.name"
           required
           placeholder="e.g. Nairobi CBD"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div>
@@ -65,7 +65,7 @@ const save = useMutation({
           required
           type="number"
           min="0"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <label class="flex items-center gap-2 text-sm text-slate-600">
@@ -87,7 +87,7 @@ const save = useMutation({
         <button
           type="submit"
           :disabled="save.isPending.value"
-          class="rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:bg-slate-300"
+          class="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
         >
           {{ save.isPending.value ? "Saving…" : "Save" }}
         </button>

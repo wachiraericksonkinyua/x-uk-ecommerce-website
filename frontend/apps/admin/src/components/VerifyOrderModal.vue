@@ -52,7 +52,7 @@ const verify = useMutation({
           v-model="receipt"
           required
           placeholder="e.g. QK12ABC34D"
-          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm outline-none focus:border-blue-500"
+          class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-sm outline-none focus:border-brand-orange"
         />
       </div>
       <div class="flex justify-end gap-2">
@@ -66,7 +66,7 @@ const verify = useMutation({
         <button
           type="submit"
           :disabled="verify.isPending.value"
-          class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-slate-300"
+          class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
         >
           <BadgeCheck :size="16" />
           {{ verify.isPending.value ? "Verifying…" : "Verify payment" }}

@@ -40,6 +40,7 @@ export const ORDER_STATUSES = [
   "Delivered",
   "Cancelled",
   "Payment Failed",
+  "Refunded",
 ] as const;
 
 export const LEAD_STATUSES = [
@@ -56,14 +57,16 @@ export function statusColor(status?: string | null): string {
     case "Paid":
     case "won":
     case "Delivered":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-brand-orange-soft text-brand-orange-dark";
     case "Processing":
-      return "bg-blue-100 text-blue-700";
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Shipped":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Cancelled":
     case "lost":
       return "bg-slate-200 text-slate-600";
+    case "Refunded":
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Payment Failed":
       return "bg-rose-100 text-rose-700";
     case "hot":
@@ -71,7 +74,7 @@ export function statusColor(status?: string | null): string {
     case "warm":
       return "bg-amber-100 text-amber-700";
     case "cold":
-      return "bg-sky-100 text-sky-700";
+      return "bg-brand-blue-100 text-brand-blue-700";
     case "Pending PIN":
     case "new":
     default:

@@ -13,6 +13,8 @@ export interface Product {
   category?: string | null;
   category_id?: string | null;
   stock_quantity?: number | null;
+  compatibility?: string | null;
+  specs?: Record<string, unknown> | null;
   image_url?: string | null;
   product_images?: ProductImage[] | null;
   created_at?: string;
@@ -58,8 +60,75 @@ export interface Order {
   status: string;
   receipt_number?: string | null;
   checkout_request_id?: string | null;
+  is_verified?: boolean | null;
+  verified_at?: string | null;
+  verified_by?: string | null;
+  verification_note?: string | null;
+  refunded_at?: string | null;
+  refunded_by?: string | null;
+  refund_reason?: string | null;
+  refund_amount?: number | null;
   items: OrderItem[];
   created_at?: string;
+}
+
+export interface InventoryMovement {
+  id: string;
+  product_id?: string | null;
+  order_id?: string | null;
+  change_qty: number;
+  quantity_before?: number | null;
+  quantity_after?: number | null;
+  unit_price?: number | null;
+  reason: string;
+  note?: string | null;
+  product_name?: string | null;
+  created_at?: string;
+}
+
+export interface SalesAnalytics {
+  success: boolean;
+  window_days: number;
+  low_stock_threshold: number;
+  revenue: {
+    gross: number;
+    refunded: number;
+    net: number;
+    today: number;
+  };
+  orders: {
+    total: number;
+    paid: number;
+    pending: number;
+    refunded: number;
+    verified: number;
+    unverified_paid: number;
+  };
+  units_sold: number;
+  status_breakdown: Record<string, number>;
+  payment_breakdown: Record<string, number>;
+  daily_series: {
+    date: string;
+    revenue: number;
+    refunded: number;
+    orders: number;
+    units: number;
+  }[];
+  top_products: {
+    product_id: string;
+    name: string;
+    units: number;
+    revenue: number;
+  }[];
+  stock_alerts: {
+    id: string;
+    name: string;
+    brand?: string | null;
+    stock_quantity: number;
+    price?: number | null;
+    units_sold: number;
+  }[];
+  movements: InventoryMovement[];
 }
 
 export interface DashboardSummary {
