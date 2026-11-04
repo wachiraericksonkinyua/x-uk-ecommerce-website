@@ -246,6 +246,19 @@ function closeMenu() {
             Shop
           </RouterLink>
           <RouterLink
+            to="/cart"
+            class="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            @click="closeMenu"
+          >
+            <span>Cart</span>
+            <span
+              v-if="cartCount > 0"
+              class="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-orange px-1.5 text-[10px] font-bold text-white"
+            >
+              {{ cartCount }}
+            </span>
+          </RouterLink>
+          <RouterLink
             to="/track"
             class="rounded-xl px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
             @click="closeMenu"
@@ -259,6 +272,24 @@ function closeMenu() {
           >
             Wishlist
           </RouterLink>
+          <div v-if="categories?.length" class="mt-2 border-t border-slate-100 pt-2">
+            <p
+              class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+            >
+              Categories
+            </p>
+            <div class="flex flex-wrap gap-2 px-3 py-1">
+              <RouterLink
+                v-for="category in categories"
+                :key="category.id"
+                :to="`/shop?category=${encodeURIComponent(category.name)}`"
+                class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-blue-300 hover:text-brand-orange"
+                @click="closeMenu"
+              >
+                {{ category.name }}
+              </RouterLink>
+            </div>
+          </div>
           <template v-if="auth.token">
             <RouterLink
               to="/profile"
@@ -293,7 +324,7 @@ function closeMenu() {
       </div>
     </header>
 
-    <main class="flex-1 pb-24 md:pb-0">
+    <main class="flex-1">
       <RouterView />
     </main>
 

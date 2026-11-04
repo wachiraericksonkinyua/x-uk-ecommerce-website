@@ -77,7 +77,7 @@ function subscribe() {
     </section>
   </div>
 
-  <footer class="mt-10 border-t border-slate-800 bg-slate-950 pb-24 text-slate-300 md:pb-0">
+  <footer class="mt-10 border-t border-slate-800 bg-slate-950 text-slate-300">
     <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
       <div>
         <RouterLink to="/" class="inline-flex items-center gap-2 text-white">

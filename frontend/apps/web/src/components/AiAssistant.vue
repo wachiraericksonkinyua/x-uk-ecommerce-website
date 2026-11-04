@@ -52,7 +52,7 @@ function clampPosition(x: number, y: number) {
 function placeDefault() {
   const width = panel.value?.offsetWidth ?? 352;
   const height = panel.value?.offsetHeight ?? 448;
-  const bottomOffset = window.innerWidth < 768 ? 132 : 92;
+  const bottomOffset = 92;
   const next = clampPosition(
     window.innerWidth - width - 20,
     window.innerHeight - height - bottomOffset
@@ -144,7 +144,7 @@ function handleSend() {
 </script>
 
 <template>
-  <div v-if="!auth.token" class="fixed bottom-24 right-5 z-40 md:bottom-5">
+  <div v-if="!auth.token" class="fixed bottom-5 right-5 z-40">
     <RouterLink
       :to="{ path: '/login', query: { next: route.path } }"
       class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-3 text-sm font-medium text-white shadow-lg transition hover:bg-orange-600"
@@ -225,7 +225,7 @@ function handleSend() {
     </div>
 
     <button
-      class="fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg transition hover:bg-orange-600 md:bottom-5"
+      class="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange text-white shadow-lg transition hover:bg-orange-600"
       aria-label="Toggle AI assistant"
       @click="toggleOpen"
     >
