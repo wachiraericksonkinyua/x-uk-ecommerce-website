@@ -12,7 +12,7 @@ from app.services.inventory import (
     hold_order_stock,
     record_inventory_movement,
     release_stock_once,
-    restore_order_stock,
+    restore_items,
 )
 from app.services.mpesa import apply_stk_result, process_stk_callback
 from pydantic import BaseModel, EmailStr
@@ -96,6 +96,15 @@ def _normalize_phone(phone: Optional[str]) -> str:
 
 
 RECEIPT_PATTERN = re.compile(r"^[A-Z0-9]{10}$")
+
+
+def generate_order_reference() -> str:
+    """Return a short, human-friendly reference with collision-safe entropy.
+
+    Eight hex characters give ~4.3 billion combinations, and migration 009 adds
+    a unique index so a duplicate can never be silently accepted.
+    """
+    return f"GWV-{uuid.uuid4().hex[:8].upper()}"
 
 
 def _mask_email(value: Any) -> str:
@@ -288,7 +297,7 @@ async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_
         order_total = round(validated_items_total + validated_delivery_cost, 2)
 
         order_uuid = str(uuid.uuid4())
-        short_ref = f"GWV-{order_uuid[:4]}"
+        short_ref = generate_order_reference()
         is_mpesa = "M-Pesa" in payload.payment_method
 
         # 2. Persist the order first so stock is never held without a record
@@ -310,7 +319,10 @@ async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_
         }
         supabase.table("orders").insert(order_record).execute()
 
-        # 3. Decrement product stock quantities
+        # 3. Decrement product stock quantities.
+        #    Track exactly which lines were decremented so a mid-loop failure
+        #    rolls back only that stock — never lines that were never held.
+        applied_items = []
         try:
             for line in line_items:
                 prod_res = supabase.table("products").select("stock_quantity").eq("id", line["id"]).execute()
@@ -320,6 +332,9 @@ async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_
                 current_stock = _coerce_stock_quantity(prod_res.data[0].get("stock_quantity"), line["name"])
                 new_stock = max(0, current_stock - line["qty"])
                 supabase.table("products").update({"stock_quantity": new_stock}).eq("id", line["id"]).execute()
+                held_qty = current_stock - new_stock
+                if held_qty > 0:
+                    applied_items.append({**line, "qty": held_qty})
                 record_inventory_movement(
                     product_id=line["id"],
                     order_id=order_uuid,
@@ -331,8 +346,14 @@ async def process_checkout(payload: CheckoutRequest, current_user = Depends(get_
                     created_by=current_user.id,
                 )
         except Exception:
-            # Roll back any partial decrements and remove the dangling order
-            restore_order_stock(order_record, reason="checkout_rollback", created_by=current_user.id)
+            # Roll back only the stock that was actually decremented, then
+            # remove the dangling order.
+            restore_items(
+                applied_items,
+                order_id=order_uuid,
+                reason="checkout_rollback",
+                created_by=current_user.id,
+            )
             supabase.table("orders").delete().eq("id", order_uuid).execute()
             raise
 

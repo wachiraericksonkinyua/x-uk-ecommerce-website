@@ -6,6 +6,7 @@ import CategoriesPage from "../pages/CategoriesPage.vue";
 import CustomersPage from "../pages/CustomersPage.vue";
 import DashboardPage from "../pages/DashboardPage.vue";
 import DeliveryPage from "../pages/DeliveryPage.vue";
+import InventoryPage from "../pages/InventoryPage.vue";
 import LeadsPage from "../pages/LeadsPage.vue";
 import AdminLoginPage from "../pages/LoginPage.vue";
 import OrdersPage from "../pages/OrdersPage.vue";
@@ -24,6 +25,7 @@ const router = createRouter({
         { path: "analytics", component: AnalyticsPage },
         { path: "orders", component: OrdersPage },
         { path: "products", component: ProductsPage },
+        { path: "inventory", component: InventoryPage },
         { path: "categories", component: CategoriesPage },
         { path: "delivery", component: DeliveryPage },
         { path: "customers", component: CustomersPage },

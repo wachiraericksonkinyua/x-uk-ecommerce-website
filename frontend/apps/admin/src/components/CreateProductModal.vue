@@ -380,7 +380,7 @@ function submit() {
         <button
           type="submit"
           :disabled="save.isPending.value"
-          class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
+          class="btn-primary"
         >
           <Upload :size="15" />
           {{ save.isPending.value ? "Saving…" : isEdit ? "Save changes" : "Create product" }}

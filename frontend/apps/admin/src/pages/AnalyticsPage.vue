@@ -35,14 +35,14 @@ const stats = computed(() => {
       value: formatKES(current.revenue.net),
       hint: `${formatKES(current.revenue.refunded)} refunded`,
       icon: TrendingUp,
-      tone: "bg-brand-orange-soft text-brand-orange-dark",
+      tone: "bg-emerald-50 text-emerald-600",
     },
     {
       label: "Units Sold",
       value: String(current.units_sold),
       hint: `${current.orders.paid} paid orders`,
       icon: Package,
-      tone: "bg-brand-blue-100 text-brand-blue-700",
+      tone: "bg-brand-orange-soft text-brand-orange-dark",
     },
     {
       label: "Low Stock",
@@ -121,7 +121,7 @@ function reasonLabel(reason: string) {
             :title="`${day.date}: ${formatKES(day.revenue)} · ${day.orders} orders`"
           >
             <div
-              class="w-full rounded-t-md bg-gradient-to-t from-brand-orange to-[#FF9B6B] transition-all duration-300 group-hover:from-brand-orange-dark group-hover:to-brand-orange"
+              class="w-full rounded-t-md bg-brand-orange/85 transition-all duration-300 group-hover:bg-brand-orange"
               :style="{ height: barHeight(day.revenue) }"
             />
           </div>

@@ -119,7 +119,7 @@ const save = useMutation({
         <button
           type="submit"
           :disabled="save.isPending.value"
-          class="rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
+          class="btn-primary"
         >
           {{ save.isPending.value ? "Saving…" : "Save review" }}
         </button>

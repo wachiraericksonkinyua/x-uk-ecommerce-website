@@ -10,7 +10,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 class SignUpRequest(BaseModel):  # expected JSON body for signup
     email: EmailStr
-    password: str
+    # Match the reset-password rule so account creation can't be weaker.
+    password: str = Field(min_length=8, max_length=72)
 
 
 class LoginRequest(BaseModel):  # expected JSON body for login
@@ -24,6 +25,11 @@ class RefreshRequest(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=72)
+    new_password: str = Field(min_length=8, max_length=72)
 
 
 class ResetPasswordRequest(BaseModel):
@@ -103,6 +109,30 @@ def logout(
     except Exception:
         pass  # JWTs are stateless; the client discarding the token is enough
     return {"success": True, "message": "Logged out"}
+
+
+@router.post("/change-password")
+def change_password(payload: ChangePasswordRequest, current_user=Depends(get_current_user)):
+    """Change the signed-in user's password after verifying the current one."""
+    email = getattr(current_user, "email", None)
+    if not email:
+        raise HTTPException(status_code=400, detail="This account has no email address")
+
+    try:
+        supabase.auth.sign_in_with_password(
+            {"email": email, "password": payload.current_password}
+        )
+    except Exception:
+        raise HTTPException(status_code=400, detail="Your current password is incorrect")
+
+    try:
+        supabase.auth.admin.update_user_by_id(
+            current_user.id, {"password": payload.new_password}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"success": True, "message": "Password updated successfully"}
 
 
 @router.post("/forgot-password")

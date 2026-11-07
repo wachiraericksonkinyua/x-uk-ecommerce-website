@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ImagePlus, Pencil, Plus, Search, Trash2 } from "@lucide/vue";
+import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 
 import Card from "../components/Card.vue";
@@ -20,6 +21,8 @@ import {
 import type { Product } from "../lib/types";
 import { formatKES, productImage } from "../lib/utils";
 
+const route = useRoute();
+const router = useRouter();
 const queryClient = useQueryClient();
 const page = ref(1);
 const searchInput = ref("");
@@ -28,6 +31,13 @@ const lowStock = ref(false);
 const createOpen = ref(false);
 const editProduct = ref<Product | null>(null);
 const imagesProduct = ref<Product | null>(null);
+
+onMounted(() => {
+  if (route.query.create) {
+    createOpen.value = true;
+    router.replace({ query: { ...route.query, create: undefined } });
+  }
+});
 
 const pageSize = 20;
 
@@ -86,7 +96,7 @@ function confirmDelete(product: Product) {
         </p>
       </div>
       <button
-        class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+        class="btn-primary"
         @click="createOpen = true"
       >
         <Plus :size="16" /> Create Product

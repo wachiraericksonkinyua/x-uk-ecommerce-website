@@ -162,7 +162,7 @@ function handleSend() {
       :style="{ left: `${position.x}px`, top: `${position.y}px` }"
     >
       <div
-        class="flex cursor-move touch-none select-none items-center justify-between bg-gradient-to-r from-brand-orange-dark via-brand-orange to-[#FF8A5B] px-4 py-3 text-white"
+        class="flex cursor-move touch-none select-none items-center justify-between bg-slate-900 px-4 py-3 text-white"
         title="Drag to move"
         @pointerdown="startDrag"
       >

@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from app.database import supabase
-from app.services.inventory import release_stock_once
+from app.services.inventory import hold_order_stock, release_stock_once
 from app.utils.email import send_receipt_email
 
 
@@ -97,6 +97,11 @@ def apply_stk_result(
         if receipt:
             update["receipt_number"] = receipt
 
+        # A failed STK attempt releases stock; if the success callback lands
+        # later (common when the customer pays after the first timeout), the
+        # order must hold its stock again before we confirm it as Paid.
+        previous_status = order.get("status")
+
         # Atomic + idempotent: only transition orders that aren't already Paid.
         res = (
             supabase.table("orders")
@@ -106,6 +111,8 @@ def apply_stk_result(
             .execute()
         )
         if res.data:
+            if previous_status == "Payment Failed":
+                hold_order_stock(order, reason="payment_recovered")
             _send_receipt({**order, **update})
         return "Paid"
 

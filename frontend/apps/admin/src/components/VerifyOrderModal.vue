@@ -66,7 +66,7 @@ const verify = useMutation({
         <button
           type="submit"
           :disabled="verify.isPending.value"
-          class="inline-flex items-center gap-2 rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:bg-slate-300"
+          class="btn-primary"
         >
           <BadgeCheck :size="16" />
           {{ verify.isPending.value ? "Verifying…" : "Verify payment" }}

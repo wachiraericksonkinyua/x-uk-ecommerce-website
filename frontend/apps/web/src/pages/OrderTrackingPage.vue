@@ -124,12 +124,12 @@ const needsManualVerify = computed(
       </div>
       <h1 class="mt-4 text-xl font-bold text-slate-900">Track your order</h1>
       <p class="mt-1 text-sm text-slate-500">
-        Enter the order reference you received at checkout (e.g. GWV-A1B2).
+        Enter the order reference you received at checkout (e.g. GWV-A1B2C3D4).
       </p>
       <form class="mt-5 flex gap-2" @submit.prevent="submitSearch">
         <input
           v-model="search"
-          placeholder="GWV-XXXX"
+          placeholder="GWV-XXXXXXXX"
           class="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
         <button

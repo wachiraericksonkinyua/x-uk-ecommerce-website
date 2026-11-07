@@ -9,22 +9,51 @@ router = APIRouter(prefix="/cart", tags=["Cart"])
 
 class CartItem(BaseModel):
     product_id: str
-    quantity: int = 1
+    quantity: int = Field(1, ge=1, le=99)
 
 
 class CartItemUpdate(BaseModel):
-    quantity: int = Field(..., ge=1)
+    quantity: int = Field(..., ge=1, le=99)
 
 
 @router.post("/add")
 async def add_to_cart(item: CartItem, current_user=Depends(get_current_user)):
     try:
+        product_res = (
+            supabase.table("products")
+            .select("id, name, stock_quantity")
+            .eq("id", item.product_id)
+            .execute()
+        )
+        if not product_res.data or not isinstance(product_res.data[0], dict):
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        product = product_res.data[0]
+        stock = product.get("stock_quantity")
+        try:
+            stock = int(stock) if stock is not None else None
+        except (TypeError, ValueError):
+            stock = 0
+
         # If the item already exists, increment; otherwise insert a new row.
         res = supabase.table("cart_items").select("*").eq("user_id", current_user.id).eq("product_id", item.product_id).execute()
 
+        current_qty = 0
+        if res.data and isinstance(res.data[0], dict):
+            try:
+                current_qty = int(res.data[0].get("quantity") or 0)
+            except (TypeError, ValueError):
+                current_qty = 0
+
+        desired_qty = current_qty + item.quantity
+        if stock is not None and desired_qty > stock:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Only {stock} unit(s) of {product.get('name') or 'this product'} available",
+            )
+
         if res.data:
-            new_qty = res.data[0]["quantity"] + item.quantity
-            supabase.table("cart_items").update({"quantity": new_qty}).eq("id", res.data[0]["id"]).execute()
+            supabase.table("cart_items").update({"quantity": desired_qty}).eq("id", res.data[0]["id"]).execute()
         else:
             supabase.table("cart_items").insert({
                 "user_id": current_user.id,
@@ -32,6 +61,8 @@ async def add_to_cart(item: CartItem, current_user=Depends(get_current_user)):
                 "quantity": item.quantity,
             }).execute()
         return {"message": "Added to cart"}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

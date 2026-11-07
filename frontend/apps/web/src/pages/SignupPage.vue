@@ -53,7 +53,7 @@ const signup = useMutation({
 });
 
 function submit() {
-  if (password.value.length < 6) {
+  if (password.value.length < 8) {
     toast.error("Password must be at least 6 characters");
     return;
   }
@@ -91,7 +91,7 @@ function submit() {
           v-model="password"
           type="password"
           required
-          placeholder="At least 6 characters"
+          placeholder="At least 8 characters"
           class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-brand-orange"
         />
       </div>

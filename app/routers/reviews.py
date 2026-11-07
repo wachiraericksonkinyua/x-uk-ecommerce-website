@@ -5,6 +5,10 @@ from app.dependencies import get_current_user, get_optional_user, user_is_admin
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
+# Only genuine purchases qualify. Failed/cancelled orders do not count, even
+# though they may still contain the product in their item snapshot.
+REVIEWABLE_ORDER_STATUSES = {"paid", "processing", "shipped", "delivered"}
+
 class ReviewCreate(BaseModel):
     product_id: str
     rating: int = Field(..., ge=1, le=5)#ge stands for "greater than or equal to" and le stands for "less than or equal to". This means that the rating must be between 1 and 5, inclusive.
@@ -20,6 +24,10 @@ def add_review(payload: ReviewCreate, current_user = Depends(get_current_user)):
         if orders_res.data:
             for order in orders_res.data:
                 if not isinstance(order, dict):
+                    continue
+
+                status = str(order.get("status") or "").strip().lower()
+                if status not in REVIEWABLE_ORDER_STATUSES:
                     continue
 
                 items = order.get("items") or []

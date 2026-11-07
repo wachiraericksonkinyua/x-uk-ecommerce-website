@@ -8,23 +8,23 @@ from typing import List, Optional
 from fastapi import UploadFile
 
 from app.database import supabase
+from app.utils.images import IMAGE_EXTENSIONS, validate_image_bytes
 
 IMAGE_BUCKET = "product-images"
 
 
-def _extension_for(file: UploadFile) -> str:
-    if file.filename and "." in file.filename:
-        suffix = file.filename.rsplit(".", 1)[-1].lower()
-        if suffix:
-            return f".{suffix}"
-    return ".jpg"
-
-
 def upload_product_file(file: UploadFile) -> str:
-    """Upload an image to Supabase Storage and return its public URL."""
+    """Validate, upload an image to Supabase Storage and return its public URL."""
     file_bytes = file.file.read()
-    path = f"phones/{uuid.uuid4()}{_extension_for(file)}"
-    supabase.storage.from_(IMAGE_BUCKET).upload(path, file_bytes)
+    mime = validate_image_bytes(file_bytes, file.content_type)
+    # Use the detected MIME (not the filename) so spoofed extensions cannot
+    # create misleading or dangerous objects in the bucket.
+    path = f"products/{uuid.uuid4()}{IMAGE_EXTENSIONS[mime]}"
+    supabase.storage.from_(IMAGE_BUCKET).upload(
+        path,
+        file_bytes,
+        file_options={"content-type": mime, "cache-control": "3600"},
+    )
     return supabase.storage.from_(IMAGE_BUCKET).get_public_url(path)
 
 

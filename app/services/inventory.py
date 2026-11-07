@@ -48,18 +48,21 @@ def record_inventory_movement(
         print(f"[inventory] movement log skipped: {exc}")
 
 
-def restore_order_stock(
-    order: Dict[str, Any],
+def restore_items(
+    items: Any,
     *,
+    order_id: Optional[str] = None,
     reason: str = "stock_restore",
     created_by: Optional[str] = None,
 ) -> None:
-    """Increment product stock back for every line item on an order."""
-    items = order.get("items")
+    """Increment product stock for an explicit list of line items.
+
+    Used both by :func:`restore_order_stock` and by checkout rollback, which
+    must restore *only* the lines that were actually decremented. Restoring the
+    whole order would invent stock for lines that failed before being held.
+    """
     if not isinstance(items, list):
         return
-
-    order_id = order.get("id")
 
     for item in items:
         if not isinstance(item, dict):
@@ -106,6 +109,23 @@ def restore_order_stock(
             reason=reason,
             created_by=created_by,
         )
+
+
+def restore_order_stock(
+    order: Dict[str, Any],
+    *,
+    reason: str = "stock_restore",
+    created_by: Optional[str] = None,
+) -> None:
+    """Increment product stock back for every line item on an order."""
+    if not isinstance(order, dict):
+        return
+    restore_items(
+        order.get("items"),
+        order_id=order.get("id"),
+        reason=reason,
+        created_by=created_by,
+    )
 
 
 def hold_order_stock(

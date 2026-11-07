@@ -55,29 +55,27 @@ export const LEAD_STATUSES = [
 export function statusColor(status?: string | null): string {
   switch (status) {
     case "Paid":
-    case "won":
     case "Delivered":
-      return "bg-brand-orange-soft text-brand-orange-dark";
+    case "won":
+      return "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10";
     case "Processing":
-      return "bg-brand-blue-100 text-brand-blue-700";
     case "Shipped":
-      return "bg-brand-blue-100 text-brand-blue-700";
+      return "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-600/10";
+    case "Refunded":
+      return "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/10";
     case "Cancelled":
     case "lost":
-      return "bg-slate-200 text-slate-600";
-    case "Refunded":
-      return "bg-brand-blue-100 text-brand-blue-700";
+      return "bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-500/10";
     case "Payment Failed":
-      return "bg-rose-100 text-rose-700";
     case "hot":
-      return "bg-rose-100 text-rose-700";
+      return "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/10";
     case "warm":
-      return "bg-amber-100 text-amber-700";
+      return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10";
     case "cold":
-      return "bg-brand-blue-100 text-brand-blue-700";
+      return "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-600/10";
     case "Pending PIN":
     case "new":
     default:
-      return "bg-amber-100 text-amber-700";
+      return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10";
   }
 }

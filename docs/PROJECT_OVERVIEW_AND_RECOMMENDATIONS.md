@@ -1,12 +1,13 @@
 # GWV-xuk / X-UK — Project Overview & Recommendations
 
-> **Last reviewed:** 2026-11-03
+> **Last reviewed:** 2026-11-07
 > **Scope:** full repository — FastAPI backend, Vue storefront, Vue admin app,
 > Supabase schema, payment/WhatsApp integrations, and tests.
 >
 > **Verification run during this review:**
-> - `venv/bin/pytest -q` → **46 tests passed**
+> - `venv/bin/pytest -q` → **79 tests passed**
 > - `npm run typecheck` (both Vue apps) → **passed**
+> - `npm run build:web` / `build:admin` → **passed**
 >
 > The older docs (`BACKEND_GUIDE.md`, `FRONTEND_ROADMAP.md`, etc.) describe React
 > in places, but the actual frontend is **Vue 3 + Vite**. Treat this file as the
@@ -318,6 +319,13 @@ Plus `supabase/rls_policies.sql` for Row Level Security.
 ---
 
 ## 8. Known gaps and risks
+
+> **2026-11-07 update:** P0 #1–#4 and P1 #7–#9, #12, #13 have been fixed in
+> code (PII masking, receipt ownership/uniqueness, 8-char order references,
+> search sanitisation, cart validation, M-Pesa-only checkout, paid-order review
+> eligibility). Migration `009_order_reference_uniqueness.sql` must be run in
+> Supabase. `006_add_reviews_is_approved.sql` is also still missing from the
+> live database. The remaining items below are still open.
 
 ### 🔴 P0 — fix before taking real traffic/money
 

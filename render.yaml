@@ -1,0 +1,87 @@
+# Render Blueprint for the GWV-xuk FastAPI backend.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Deploy: Render Dashboard -> New -> Blueprint -> connect this repo.
+# Values marked `sync: false` are prompted for in the Render Dashboard and must
+# never be committed to git.
+
+services:
+  - type: web
+    name: gwx-xuk-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: PROJECT_NAME
+        value: GWV-xuk
+
+      # --- Supabase ---------------------------------------------------------
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+
+      # --- Browser origins (comma separated, no trailing slash) -------------
+      # e.g. https://gwx-xuk.vercel.app,https://gwx-xuk-admin.vercel.app
+      - key: CORS_ORIGINS
+        sync: false
+
+      # --- Access control ---------------------------------------------------
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+
+      # --- M-Pesa Daraja ----------------------------------------------------
+      - key: DARAJA_CONSUMER_KEY
+        sync: false
+      - key: DARAJA_CONSUMER_SECRET
+        sync: false
+      - key: DARAJA_SHORTCODE
+        sync: false
+      - key: DARAJA_BUSINESS_SHORTCODE
+        sync: false
+      - key: DARAJA_PASSKEY
+        sync: false
+      - key: DARAJA_IS_SANDBOX
+        value: "false"
+      - key: DARAJA_CALLBACK_URL
+        sync: false
+      - key: DARAJA_SECURITY_CREDENTIAL
+        sync: false
+
+      # --- Email (Resend) ---------------------------------------------------
+      - key: RESEND_API_KEY
+        sync: false
+
+      # --- AI ---------------------------------------------------------------
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+
+      # --- WhatsApp Cloud API ----------------------------------------------
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: OWNER_WHATSAPP_NUMBER
+        sync: false

@@ -134,12 +134,32 @@ export interface SalesAnalytics {
 export interface DashboardSummary {
   total_revenue: number;
   daily_revenue: number;
+  refunded_revenue: number;
+  net_revenue: number;
   total_orders: number;
   paid_orders: number;
   pending_orders: number;
   total_customers: number;
   low_stock_threshold: number;
   low_stock_products: LowStockProduct[];
+  revenue_series: Array<{ date: string; revenue: number; orders: number }>;
+  status_breakdown: Record<string, number>;
+  recent_orders: Array<{
+    id: string;
+    order_reference?: string | null;
+    status?: string | null;
+    total_amount?: number | null;
+    customer_email?: string | null;
+    customer_phone?: string | null;
+    fulfillment?: string | null;
+    created_at?: string | null;
+  }>;
+  top_products: Array<{
+    product_id: string;
+    name: string;
+    units: number;
+    revenue: number;
+  }>;
 }
 
 export interface LowStockProduct {

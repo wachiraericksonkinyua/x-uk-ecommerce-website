@@ -64,6 +64,29 @@ locations, order tracking. Everything else requires a login and is guarded by a
 route guard that redirects to `/login?next=<path>`.
 
 
+## Admin access
+
+The admin dashboard runs at `http://localhost:5174`. Admin rights come from
+`ADMIN_EMAILS` in the repo `.env` **or** `profiles.role = 'admin'`.
+
+If you are locked out, reset the admin password from the repo root (uses the
+Supabase service-role key in `.env`):
+
+```bash
+venv/bin/python scripts/reset_admin_password.py --email you@example.com --generate
+```
+
+It prints a temporary password once. Sign in and use the key icon at the bottom
+of the admin sidebar to set your own password.
+
+## Database migrations
+
+Apply migrations in `supabase/migrations/` in order via the Supabase SQL editor.
+At minimum, make sure these are applied:
+
+- `006_add_reviews_is_approved.sql` — review moderation column
+- `009_order_reference_uniqueness.sql` — unique order references
+
 ## Regenerate the API types
 
 Whenever the backend changes:
